@@ -39,14 +39,14 @@ DiV
 <p class="text-xs text-slate-400">Digitalna Servisna Knjižica</p>
 </div>
 </div>
-<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.5</span>
+<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.6</span>
 </div>
 <!-- Main Tabs -->
 <div class="max-w-md mx-auto flex border-t border-slate-700/60 bg-slate-800">
 <button id="tabCustomerBtn" onclick="switchTab('customer')" class="flex-1 py-3 px-2 text-center text-xs font-bold border-b-2 border-red-500 text-red-400 transition-all flex items-center justify-center gap-1.5">
 <i class="fa-solid fa-magnifying-glass"></i> Provera Servisa
 </button>
-<button id="tabMechanicBtn" onclick="switchTab('mechanic')" class="flex-1 py-3 px-2 text-center text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5">
+<button id="tabMechanicBtn" onclick="tryOpenMechanicTab()" class="flex-1 py-3 px-2 text-center text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5">
 <i class="fa-solid fa-wrench"></i> Unos Servisa (Majstor)
 </button>
 </div>
@@ -340,6 +340,28 @@ UREDNO
 </section>
 </main>
 
+<!-- Modal: Password Check for Mechanic -->
+<div id="passwordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+<div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-4">
+<div class="text-center">
+<div class="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-2 border border-red-500/20 text-lg">
+<i class="fa-solid fa-lock"></i>
+</div>
+<h3 class="font-bold text-white text-sm">Majstorski Panel</h3>
+<p class="text-xs text-slate-400 mt-1">Unesite lozinku za pristup</p>
+</div>
+
+<form onsubmit="handlePasswordSubmit(event)" class="space-y-3">
+<input type="password" id="mechanicPasswordInput" placeholder="Lozinka..." required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white text-center tracking-widest focus:outline-none focus:border-red-500">
+<div id="passwordError" class="hidden text-[11px] text-red-400 text-center font-semibold">Pogrešna lozinka!</div>
+<div class="flex gap-2 pt-1">
+<button type="button" onclick="closePasswordModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold py-2.5 rounded-lg transition">Odustani</button>
+<button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-2.5 rounded-lg transition">Potvrdi</button>
+</div>
+</form>
+</div>
+</div>
+
 <!-- Modal: Sva Vozila u Bazi -->
 <div id="allVehiclesModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex flex-col justify-end sm:justify-center p-0 sm:p-4">
 <div class="bg-slate-900 border border-slate-700 rounded-t-2xl sm:rounded-2xl max-w-md w-full mx-auto h-[85vh] flex flex-col shadow-2xl overflow-hidden">
@@ -384,7 +406,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const CAR_BRANDS = {
 "Audi": ["A3", "A4", "A5", "A6", "A7", "Q3", "Q5", "Q7"],
 "BMW": ["Serija 1", "Serija 3", "Serija 5", "Serija 7", "X1", "X3", "X5"],
-"Volkswagen": ["Golf 5", "Golf 6", "Golf 7", "Passat B6", "Passat B7", "Passat B8", "Tiguan", "Polo"],
+"Volkswagen": ["Lupo", "Jetta", "Golf", "Passat", "Tiguan", "Polo"],
 "Renault": ["Clio", "Megane", "Kangoo", "Scenic", "Kadjar", "Talisman", "Captur"],
 "Peugeot": ["207", "208", "307", "308", "508", "2008", "3008", "5008"],
 "Fiat": ["Punto", "Grande Punto", "Bravo", "500", "500L", "Tipo", "Panda"],
@@ -401,6 +423,8 @@ const CAR_BRANDS = {
 let appData = {
 vehicles: {}
 };
+
+let isMechanicAuthorized = false;
 
 window.onload = async function() {
 await loadFromSupabase();
@@ -470,13 +494,35 @@ console.error("Greška:", e);
 }
 }
 
-function saveToLocalStorage() {
-// Funkcija zadržana radi kompatibilnosti, rad se sada odvija kroz Supabase
-}
-
 function updateVehiclesBadgeCount() {
 const count = Object.keys(appData.vehicles).length;
 document.getElementById('totalVehiclesBadge').innerText = `${count} vozil${count === 1 ? 'o' : 'a'}`;
+}
+
+function tryOpenMechanicTab() {
+if (isMechanicAuthorized) {
+switchTab('mechanic');
+} else {
+document.getElementById('mechanicPasswordInput').value = '';
+document.getElementById('passwordError').classList.add('hidden');
+document.getElementById('passwordModal').classList.remove('hidden');
+}
+}
+
+function closePasswordModal() {
+document.getElementById('passwordModal').classList.add('hidden');
+}
+
+function handlePasswordSubmit(e) {
+e.preventDefault();
+const pass = document.getElementById('mechanicPasswordInput').value;
+if (pass === 'admin123') {
+isMechanicAuthorized = true;
+closePasswordModal();
+switchTab('mechanic');
+} else {
+document.getElementById('passwordError').classList.remove('hidden');
+}
 }
 
 function switchTab(tab) {
@@ -759,7 +805,6 @@ customNotes: customNotes
 
 appData.vehicles[normKey].records.push(newRecord);
 
-// Čuvanje u Supabase bazu
 await saveVehicleToSupabase(normKey, appData.vehicles[normKey]);
 
 showToast("Servis uspešno upisan u bazu!");
