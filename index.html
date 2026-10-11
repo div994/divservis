@@ -41,7 +41,7 @@ DiV
 <p class="text-xs text-slate-400">Digitalna Servisna Knjižica</p>
 </div>
 </div>
-<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.9</span>
+<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.10</span>
 </div>
 <!-- Main Tabs -->
 <div class="max-w-md mx-auto flex border-t border-slate-700/60 bg-slate-800">
@@ -311,6 +311,14 @@ UREDNO
 <span class="text-slate-200">Zadnji diskovi</span>
 </label>
 <label class="flex items-center space-x-2 cursor-pointer bg-slate-800 p-2 rounded border border-slate-700/50">
+<input type="checkbox" name="workDone" value="Prednji amortizeri" class="accent-red-600 rounded">
+<span class="text-slate-200">Prednji amortizeri</span>
+</label>
+<label class="flex items-center space-x-2 cursor-pointer bg-slate-800 p-2 rounded border border-slate-700/50">
+<input type="checkbox" name="workDone" value="Zadnji amortizeri" class="accent-red-600 rounded">
+<span class="text-slate-200">Zadnji amortizeri</span>
+</label>
+<label class="flex items-center space-x-2 cursor-pointer bg-slate-800 p-2 rounded border border-slate-700/50">
 <input type="checkbox" name="workDone" value="Spone / Krajevi spona" class="accent-red-600 rounded">
 <span class="text-slate-200">Spone / Krajevi</span>
 </label>
@@ -321,14 +329,6 @@ UREDNO
 <label class="flex items-center space-x-2 cursor-pointer bg-slate-800 p-2 rounded border border-slate-700/50">
 <input type="checkbox" name="workDone" value="Kugle / Viljuške" class="accent-red-600 rounded">
 <span class="text-slate-200">Kugle / Viljuške</span>
-</label>
-<label class="flex items-center space-x-2 cursor-pointer bg-slate-800 p-2 rounded border border-slate-700/50">
-<input type="checkbox" name="workDone" value="Prednji amortizeri" class="accent-red-600 rounded">
-<span class="text-slate-200">Prednji amortizeri</span>
-</label>
-<label class="flex items-center space-x-2 cursor-pointer bg-slate-800 p-2 rounded border border-slate-700/50">
-<input type="checkbox" name="workDone" value="Zadnji amortizeri" class="accent-red-600 rounded">
-<span class="text-slate-200">Zadnji amortizeri</span>
 </label>
 <label class="flex items-center space-x-2 cursor-pointer bg-slate-800 p-2 rounded border border-slate-700/50">
 <input type="checkbox" name="workDone" value="Optika trapa" class="accent-red-600 rounded">
@@ -850,22 +850,15 @@ let licenseImgBase64 = '';
 if (carImgFile) carImgBase64 = await fileToBase64(carImgFile);
 if (licenseImgFile) licenseImgBase64 = await fileToBase64(licenseImgFile);
 
-if (!appData.vehicles[normKey]) {
-appData.vehicles[normKey] = {
-plate: rawPlate.toUpperCase(),
-brand: brand,
-model: model,
-year: year,
-carImage: carImgBase64,
-licenseImage: licenseImgBase64,
-records: []
-};
-} else {
-if (carImgBase64) appData.vehicles[normKey].carImage = carImgBase64;
-if (licenseImgBase64) appData.vehicles[normKey].licenseImage = licenseImgBase64;
-appData.vehicles[normKey].brand = brand;
-appData.vehicles[normKey].model = model;
-appData.vehicles[normKey].year = year;
+// Provera postojanja vozila i čuvanje starih zapisa
+let existingRecords = [];
+let existingCarImg = '';
+let existingLicenseImg = '';
+
+if (appData.vehicles[normKey]) {
+existingRecords = appData.vehicles[normKey].records || [];
+existingCarImg = appData.vehicles[normKey].carImage || '';
+existingLicenseImg = appData.vehicles[normKey].licenseImage || '';
 }
 
 const newRecord = {
@@ -878,7 +871,18 @@ items: selectedItems,
 customNotes: customNotes
 };
 
-appData.vehicles[normKey].records.push(newRecord);
+// Dodajemo novi zapis na postojeću listu
+existingRecords.push(newRecord);
+
+appData.vehicles[normKey] = {
+plate: rawPlate.toUpperCase(),
+brand: brand,
+model: model,
+year: year,
+carImage: carImgBase64 ? carImgBase64 : existingCarImg,
+licenseImage: licenseImgBase64 ? licenseImgBase64 : existingLicenseImg,
+records: existingRecords
+};
 
 await saveVehicleToSupabase(normKey, appData.vehicles[normKey]);
 
@@ -957,7 +961,6 @@ Proveri Karton
 </div>
 `;
 
-container.badge = null;
 container.appendChild(card);
 });
 }
