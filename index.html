@@ -41,7 +41,7 @@ DiV
 <p class="text-xs text-slate-400">Digitalna Servisna Knjižica</p>
 </div>
 </div>
-<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.10</span>
+<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.11</span>
 </div>
 <!-- Main Tabs -->
 <div class="max-w-md mx-auto flex border-t border-slate-700/60 bg-slate-800">
@@ -480,6 +480,11 @@ return;
 appData.vehicles = {};
 if (data) {
 data.forEach(row => {
+let parsedRecords = row.records;
+if (typeof parsedRecords === 'string') {
+try { parsedRecords = JSON.parse(parsedRecords); } catch(e) { parsedRecords = []; }
+}
+
 appData.vehicles[row.plate] = {
 plate: row.plate,
 brand: row.brand,
@@ -487,7 +492,7 @@ model: row.model,
 year: row.year,
 carImage: row.car_image || '',
 licenseImage: row.license_image || '',
-records: row.records || []
+records: Array.isArray(parsedRecords) ? parsedRecords : []
 };
 });
 }
@@ -850,15 +855,35 @@ let licenseImgBase64 = '';
 if (carImgFile) carImgBase64 = await fileToBase64(carImgFile);
 if (licenseImgFile) licenseImgBase64 = await fileToBase64(licenseImgFile);
 
-// Provera postojanja vozila i čuvanje starih zapisa
+// Proveravamo bazu direktno pre upisa da osiguramo da ne pregazimo postojeće servise
 let existingRecords = [];
 let existingCarImg = '';
 let existingLicenseImg = '';
 
+try {
+const { data, error } = await supabaseClient
+.from('vehicles')
+.select('*')
+.eq('plate', normKey)
+.single();
+
+if (data) {
+let dbRecords = data.records;
+if (typeof dbRecords === 'string') {
+try { dbRecords = JSON.parse(dbRecords); } catch(e) { dbRecords = []; }
+}
+if (Array.isArray(dbRecords)) {
+existingRecords = dbRecords;
+}
+existingCarImg = data.car_image || '';
+existingLicenseImg = data.license_image || '';
+}
+} catch (err) {
 if (appData.vehicles[normKey]) {
 existingRecords = appData.vehicles[normKey].records || [];
 existingCarImg = appData.vehicles[normKey].carImage || '';
 existingLicenseImg = appData.vehicles[normKey].licenseImage || '';
+}
 }
 
 const newRecord = {
@@ -871,7 +896,7 @@ items: selectedItems,
 customNotes: customNotes
 };
 
-// Dodajemo novi zapis na postojeću listu
+// Dodajemo novi zapis na postojeću listu iz baze
 existingRecords.push(newRecord);
 
 appData.vehicles[normKey] = {
