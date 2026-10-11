@@ -8,6 +8,8 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Chart.js za Timeline / Grafikon -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body {
 font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -39,7 +41,13 @@ DiV
 <p class="text-xs text-slate-400">Digitalna Servisna Knjižica</p>
 </div>
 </div>
-<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.6</span>
+<div class="flex items-center gap-2">
+<a href="tel:+381640058274" class="bg-emerald-600 hover:bg-emerald-500 text-white p-2 rounded-lg text-xs font-bold shadow-md flex items-center gap-1.5 transition" title="Pozovite servis">
+<i class="fa-solid fa-phone"></i>
+<span class="hidden sm:inline">+381 64 0058274</span>
+</a>
+<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.7</span>
+</div>
 </div>
 <!-- Main Tabs -->
 <div class="max-w-md mx-auto flex border-t border-slate-700/60 bg-slate-800">
@@ -99,6 +107,16 @@ ZR-123-ZR
 <span>Poslednji servis u bazi: <strong id="resLastKm" class="text-white">175.000 km</strong></span>
 <span id="resLastDate" class="text-slate-400">15.03.2024.</span>
 </div>
+</div>
+</div>
+
+<!-- TIMELINE GRAFIKON (CarVertical stil) -->
+<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg space-y-3">
+<h3 class="font-bold text-white text-sm flex items-center gap-2 border-b border-slate-700 pb-2">
+<i class="fa-solid fa-chart-line text-red-500"></i> Istorija Kilometraže (Timeline)
+</h3>
+<div class="w-full h-48 relative">
+<canvas id="mileageChart"></canvas>
 </div>
 </div>
 
@@ -296,7 +314,7 @@ UREDNO
 <span class="text-slate-200">Spone / Krajevi</span>
 </label>
 <label class="flex items-center space-x-2 cursor-pointer bg-slate-800 p-2 rounded border border-slate-700/50">
-<input type="checkbox" name="workDone" value="Spone / Krajevi spona" class="accent-red-600 rounded">
+<input type="checkbox" name="workDone" value="Stabilizatori" class="accent-red-600 rounded">
 <span class="text-slate-200">Stabilizatori</span>
 </label>
 <label class="flex items-center space-x-2 cursor-pointer bg-slate-800 p-2 rounded border border-slate-700/50">
@@ -433,6 +451,7 @@ vehicles: {}
 };
 
 let isMechanicAuthorized = false;
+let mileageChartInstance = null;
 
 window.onload = async function() {
 await loadFromSupabase();
@@ -660,21 +679,68 @@ carImg.classList.add('hidden');
 carImgPlaceholder.classList.remove('hidden');
 }
 
-const sortedRecords = [...vehicle.records].sort((a, b) => b.km - a.km);
-const latestRecord = sortedRecords[0];
+const sortedRecords = [...vehicle.records].sort((a, b) => new Date(a.date) - new Date(b.date));
+const latestRecord = [...vehicle.records].sort((a, b) => b.km - a.km)[0];
 
 document.getElementById('resLastKm').innerText = `${latestRecord.km.toLocaleString('sr-RS')} km`;
 document.getElementById('resLastDate').innerText = formatDate(latestRecord.date);
 
 const activeKm = currentKmInput > latestRecord.km ? currentKmInput : latestRecord.km;
 
-const lastMali = sortedRecords.find(r => r.maliServis);
+const lastMali = sortedRecords.slice().reverse().find(r => r.maliServis);
 updateServiceStatusUI('mali', lastMali, activeKm, 10000, 365);
 
-const lastVeliki = sortedRecords.find(r => r.velikiServis);
+const lastVeliki = sortedRecords.slice().reverse().find(r => r.velikiServis);
 updateServiceStatusUI('veliki', lastVeliki, activeKm, 60000, 365 * 5);
 
-renderServiceHistory(sortedRecords);
+renderServiceHistory([...vehicle.records].sort((a, b) => b.km - a.km));
+renderMileageChart(sortedRecords);
+}
+
+function renderMileageChart(sortedRecords) {
+const ctx = document.getElementById('mileageChart').getContext('2d');
+
+if (mileageChartInstance) {
+mileageChartInstance.destroy();
+}
+
+const labels = sortedRecords.map(r => formatDate(r.date));
+const dataKm = sortedRecords.map(r => r.km);
+
+mileageChartInstance = new Chart(ctx, {
+type: 'line',
+data: {
+labels: labels,
+datasets: [{
+label: 'Kilometraža (km)',
+data: dataKm,
+borderColor: '#ef4444',
+backgroundColor: 'rgba(239, 68, 68, 0.1)',
+borderWidth: 2.5,
+pointBackgroundColor: '#ef4444',
+pointRadius: 4,
+fill: true,
+tension: 0.2
+}]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+plugins: {
+legend: { display: false }
+},
+scales: {
+x: {
+ticks: { color: '#94a3b8', font: { size: 10 } },
+grid: { color: '#334155' }
+},
+y: {
+ticks: { color: '#94a3b8', font: { size: 10 } },
+grid: { color: '#334155' }
+}
+}
+}
+});
 }
 
 function updateServiceStatusUI(type, lastRecord, currentKm, kmInterval, daysInterval) {
@@ -683,6 +749,7 @@ const doneKmEl = document.getElementById(`${type}DoneKm`);
 const doneDateEl = document.getElementById(`${type}DoneDate`);
 const nextKmEl = document.getElementById(`${type}NextKm`);
 const statusDesc = document.getElementById(`${type}StatusDesc`);
+const boxEl = document.getElementById(`${type}ServisBox`);
 
 if (!lastRecord) {
 badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-700 text-slate-300 border border-slate-600";
@@ -691,6 +758,7 @@ doneKmEl.innerText = "Nije evidentiran";
 doneDateEl.innerText = "-";
 nextKmEl.innerText = "-";
 statusDesc.innerText = "Nema prethodnih zapisa u bazi za ovu vrstu servisa.";
+boxEl.className = "bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow";
 return;
 }
 
@@ -707,16 +775,19 @@ const today = new Date();
 const diffDays = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
 
 if (diffKm <= 0 || diffDays <= 0) {
-badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-red-500/20 text-red-400 border border-red-500/30";
-badge.innerText = "POTREBAN SERVIS!";
-statusDesc.innerHTML = `<span class="text-red-400 font-bold">Servis je istekao!</span> Prekoračeno za ${Math.abs(diffKm).toLocaleString('sr-RS')} km.`;
+badge.className = "px-2.5 py-1 rounded text-[11px] font-extrabold bg-red-600 text-white animate-pulse shadow-md border border-red-400";
+badge.innerText = "🚨 POTREBAN SERVIS!";
+boxEl.className = "bg-red-950/40 border-2 border-red-500 rounded-xl p-3.5 shadow-xl";
+statusDesc.innerHTML = `<span class="text-red-400 font-bold text-xs">Servis je istekao!</span> Prekoračeno za ${Math.abs(diffKm).toLocaleString('sr-RS')} km. Pozovite servis za termin!`;
 } else if (diffKm <= 1500 || diffDays <= 30) {
-badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-badge.innerText = "USKORO ISTIČE";
+badge.className = "px-2.5 py-1 rounded text-[11px] font-bold bg-amber-500 text-slate-950 shadow-md border border-amber-300";
+badge.innerText = "⚠️ USKORO ISTIČE";
+boxEl.className = "bg-amber-950/30 border-2 border-amber-500/80 rounded-xl p-3.5 shadow-xl";
 statusDesc.innerHTML = `<span class="text-amber-400 font-bold">Uskoro servis!</span> Preostalo još oko ${diffKm.toLocaleString('sr-RS')} km ili ${diffDays} dana.`;
 } else {
 badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
 badge.innerText = "UREDNO";
+boxEl.className = "bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow";
 statusDesc.innerHTML = `<span class="text-emerald-400 font-bold">Sve je u redu.</span> Preostalo još ${diffKm.toLocaleString('sr-RS')} km do sledećeg servisa.`;
 }
 }
