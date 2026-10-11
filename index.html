@@ -41,7 +41,7 @@ DiV
 <p class="text-xs text-slate-400">Digitalna Servisna Knjižica</p>
 </div>
 </div>
-<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.15</span>
+<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.16</span>
 </div>
 <!-- Main Tabs -->
 <div class="max-w-md mx-auto flex border-t border-slate-700/60 bg-slate-800">
@@ -210,15 +210,18 @@ UREDNO
 <div class="grid grid-cols-2 gap-2">
 <div>
 <label class="block text-xs font-semibold text-slate-300 mb-1">Marka *</label>
-<select id="inputBrand" onchange="updateModels()" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500 text-xs">
+<select id="inputBrand" onchange="handleBrandChange()" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500 text-xs">
 <option value="">Izaberi marku</option>
 </select>
+<input type="text" id="inputCustomBrand" placeholder="Unesite novu marku..." class="hidden w-full mt-1.5 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-red-500">
 </div>
+
 <div>
 <label class="block text-xs font-semibold text-slate-300 mb-1">Model *</label>
-<select id="inputModel" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500 text-xs">
+<select id="inputModel" onchange="handleModelChange()" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500 text-xs">
 <option value="">Prvo izaberi marku</option>
 </select>
+<input type="text" id="inputCustomModel" placeholder="Unesite novi model..." class="hidden w-full mt-1.5 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-red-500">
 </div>
 </div>
 
@@ -588,22 +591,75 @@ opt.value = brand;
 opt.textContent = brand;
 brandSelect.appendChild(opt);
 });
+
+// Opcija za dodavanje nove marke
+const customOpt = document.createElement('option');
+customOpt.value = "CUSTOM_NEW";
+customOpt.textContent = "+ Dodaj novu marku...";
+brandSelect.appendChild(customOpt);
+}
+
+function handleBrandChange() {
+const brandSelect = document.getElementById('inputBrand');
+const customBrandInput = document.getElementById('inputCustomBrand');
+
+if (brandSelect.value === 'CUSTOM_NEW') {
+customBrandInput.classList.remove('hidden');
+customBrandInput.required = true;
+updateModelsForCustomBrand();
+} else {
+customBrandInput.classList.add('hidden');
+customBrandInput.required = false;
+customBrandInput.value = '';
+updateModels();
+}
 }
 
 function updateModels() {
 const brandSelect = document.getElementById('inputBrand');
 const modelSelect = document.getElementById('inputModel');
-const selectedBrand = brandSelect.value;
+const customModelInput = document.getElementById('inputCustomModel');
 
+customModelInput.classList.add('hidden');
+customModelInput.required = false;
+customModelInput.value = '';
+
+const selectedBrand = brandSelect.value;
 modelSelect.innerHTML = '<option value="">Izaberi model</option>';
 
-if (selectedBrand && CAR_BRANDS[selectedBrand]) {
+if (selectedBrand && selectedBrand !== 'CUSTOM_NEW' && CAR_BRANDS[selectedBrand]) {
 CAR_BRANDS[selectedBrand].forEach(model => {
 const opt = document.createElement('option');
 opt.value = model;
 opt.textContent = model;
 modelSelect.appendChild(opt);
 });
+}
+
+// Opcija za nov model
+const customOpt = document.createElement('option');
+customOpt.value = "CUSTOM_NEW";
+customOpt.textContent = "+ Dodaj novi model...";
+modelSelect.appendChild(customOpt);
+}
+
+function updateModelsForCustomBrand() {
+const modelSelect = document.getElementById('inputModel');
+modelSelect.innerHTML = '<option value="CUSTOM_NEW">+ Dodaj novi model...</option>';
+handleModelChange();
+}
+
+function handleModelChange() {
+const modelSelect = document.getElementById('inputModel');
+const customModelInput = document.getElementById('inputCustomModel');
+
+if (modelSelect.value === 'CUSTOM_NEW') {
+customModelInput.classList.remove('hidden');
+customModelInput.required = true;
+} else {
+customModelInput.classList.add('hidden');
+customModelInput.required = false;
+customModelInput.value = '';
 }
 }
 
@@ -633,13 +689,19 @@ const existing = appData.vehicles[normKey];
 noticeEl.classList.remove('hidden');
 
 const brandSelect = document.getElementById('inputBrand');
-if (brandSelect.value !== existing.brand) {
+if (CAR_BRANDS[existing.brand]) {
 brandSelect.value = existing.brand;
-updateModels();
-}
-
+handleBrandChange();
 const modelSelect = document.getElementById('inputModel');
 modelSelect.value = existing.model;
+handleModelChange();
+} else {
+brandSelect.value = "CUSTOM_NEW";
+handleBrandChange();
+document.getElementById('inputCustomBrand').value = existing.brand;
+handleModelChange();
+document.getElementById('inputCustomModel').value = existing.model;
+}
 
 const yearSelect = document.getElementById('inputYear');
 yearSelect.value = existing.year;
@@ -817,7 +879,6 @@ if (rec.customNotes) {
 customNotesHtml = `<div class="mt-2 pt-2 border-t border-slate-800 text-xs text-slate-400 italic"> <strong class="text-slate-300 not-italic">Napomena:</strong> ${rec.customNotes} </div>`;
 }
 
-// Edit & Delete dugmići vidljivi ako je majstor ulogovan
 let adminActionsHtml = '';
 if (isMechanicAuthorized) {
 adminActionsHtml = `
@@ -856,8 +917,15 @@ submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Čuvanje
 
 const rawPlate = document.getElementById('inputPlate').value.trim();
 const normKey = normalizePlate(rawPlate);
-const brand = document.getElementById('inputBrand').value;
-const model = document.getElementById('inputModel').value;
+
+const brandSelect = document.getElementById('inputBrand').value;
+const customBrand = document.getElementById('inputCustomBrand').value.trim();
+const brand = (brandSelect === 'CUSTOM_NEW') ? customBrand : brandSelect;
+
+const modelSelect = document.getElementById('inputModel').value;
+const customModel = document.getElementById('inputCustomModel').value.trim();
+const model = (modelSelect === 'CUSTOM_NEW') ? customModel : modelSelect;
+
 const year = document.getElementById('inputYear').value;
 const date = document.getElementById('inputDate').value;
 const km = parseInt(document.getElementById('inputKm').value);
@@ -890,7 +958,6 @@ existingLicenseImg = appData.vehicles[normKey].licenseImage || '';
 }
 
 if (editingId) {
-// Ažuriranje postojećeg zapisa
 existingRecords = existingRecords.map(r => {
 if (r.id == editingId) {
 return {
@@ -906,7 +973,6 @@ customNotes: customNotes
 return r;
 });
 } else {
-// Dodavanje novog zapisa
 const newRecord = {
 id: Date.now(),
 date: date,
@@ -959,7 +1025,6 @@ document.getElementById('inputKm').value = record.km;
 document.getElementById('inputCustomWork').value = record.customNotes || '';
 document.getElementById('editRecordId').value = record.id;
 
-// Štikliranje odgovarajućih checkbox-ova
 document.querySelectorAll('input[name="workDone"]').forEach(cb => {
 cb.checked = record.items && record.items.includes(cb.value);
 });
@@ -991,6 +1056,8 @@ document.getElementById('editRecordId').value = '';
 document.getElementById('formTitleText').innerHTML = `<i class="fa-solid fa-file-circle-plus text-red-500"></i> Unos radova u servisnu knjižicu`;
 document.getElementById('cancelEditBtn').classList.add('hidden');
 document.getElementById('autoDetectNotice').classList.add('hidden');
+document.getElementById('inputCustomBrand').classList.add('hidden');
+document.getElementById('inputCustomModel').classList.add('hidden');
 setDefaultDate();
 }
 
