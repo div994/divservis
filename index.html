@@ -41,7 +41,7 @@ DiV
 <p class="text-xs text-slate-400">Digitalna Servisna Knjižica</p>
 </div>
 </div>
-<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.16</span>
+<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.17</span>
 </div>
 <!-- Main Tabs -->
 <div class="max-w-md mx-auto flex border-t border-slate-700/60 bg-slate-800">
@@ -438,19 +438,17 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const CAR_BRANDS = {
 "Audi": ["A3", "A4", "A5", "A6", "A7", "Q3", "Q5", "Q7"],
 "BMW": ["Serija 1", "Serija 3", "Serija 5", "Serija 7", "X1", "X3", "X5"],
-"Volkswagen": ["Lupo", "Jetta", "Golf", "Passat", "Tiguan", "Polo", "Sharan", "Touran"],
+"Volkswagen": ["Lupo", "Jetta", "Golf", "Passat", "Tiguan", "Polo"],
 "Renault": ["Clio", "Megane", "Kangoo", "Scenic", "Kadjar", "Talisman", "Captur"],
 "Peugeot": ["207", "208", "307", "308", "508", "2008", "3008", "5008"],
 "Fiat": ["Punto", "Grande Punto", "Bravo", "500", "500L", "Tipo", "Panda"],
 "Opel": ["Astra H", "Astra J", "Astra K", "Corsa D", "Corsa E", "Insignia", "Zafira"],
 "Mercedes-Benz": ["A-Klasa", "B-Klasa", "C-Klasa", "E-Klasa", "S-Klasa", "GLC", "GLE"],
-"Citroen": ["C3", "C4", "C5", "Berlingo", "Jumpy"],
+"Citroen": ["C3", "C4", "C5", "Berlingo"],
 "Ford": ["Focus", "Fiesta", "Mondeo", "Kuga"],
 "Hyundai": ["i20", "i30", "Tucson", "Santa Fe"],
 "Kia": ["Ceed", "Sportage", "Rio"],
 "Škoda": ["Fabia", "Octavia", "Superb", "Karoq", "Kodiaq"],
-"Mazda": ["3", "6", "CX-5"],
-"Mini": ["Cooper", "Moris"],
 "Toyota": ["Yaris", "Auris", "Corolla", "RAV4"]
 };
 
@@ -594,7 +592,6 @@ opt.textContent = brand;
 brandSelect.appendChild(opt);
 });
 
-// Opcija za dodavanje nove marke
 const customOpt = document.createElement('option');
 customOpt.value = "CUSTOM_NEW";
 customOpt.textContent = "+ Dodaj novu marku...";
@@ -638,7 +635,6 @@ modelSelect.appendChild(opt);
 });
 }
 
-// Opcija za nov model
 const customOpt = document.createElement('option');
 customOpt.value = "CUSTOM_NEW";
 customOpt.textContent = "+ Dodaj novi model...";
@@ -1002,7 +998,7 @@ await saveVehicleToSupabase(normKey, appData.vehicles[normKey]);
 submitBtn.disabled = false;
 submitBtn.innerHTML = originalBtnHtml;
 
-showToast(editingId ? "Servis uspešno izmenjen!" : "Servis uspešno upisan u bazu!");
+showToast(editingId ? "Servis uspešno izmenjen!" : "Vozilo i servis uspešno upisani u bazu!");
 
 resetFormMode();
 document.getElementById('searchPlate').value = rawPlate;
