@@ -917,14 +917,22 @@ const diffKm = nextKm - currentKm;
 const nextDate = new Date(new Date(lastRecord.date).getTime() + (daysInterval * 24 * 60 * 60 * 1000));
 const diffDays = Math.ceil((nextDate - new Date()) / (1000 * 60 * 60 * 24));
 
-if (diffKm <= 0 || diffDays <= 0) {
+if (diffKm <= 0) {
 badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-red-500/20 text-red-400 border border-red-500/30";
 badge.innerText = "ISTEKAO";
-statusDesc.innerHTML = `<span class="text-red-400 font-bold">Servis istekao!</span> Prekoračeno za ${Math.abs(diffKm).toLocaleString('sr-RS')} km.`;
+statusDesc.innerHTML = `<span class="text-red-400 font-bold">Servis istekao!</span> Prekoračeno po kilometraži za ${Math.abs(diffKm).toLocaleString('sr-RS')} km.`;
+} else if (diffDays <= 0) {
+badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-red-500/20 text-red-400 border border-red-500/30";
+badge.innerText = "ISTEKAO";
+statusDesc.innerHTML = `<span class="text-red-400 font-bold">Servis istekao!</span> Vremenski rok prekoračen pre ${Math.abs(diffDays)} dana.`;
 } else if (diffKm <= 1500 || diffDays <= 30) {
 badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30";
 badge.innerText = "USKORO";
+if (diffDays <= 30) {
+statusDesc.innerHTML = `<span class="text-amber-400 font-bold">Uskoro servis!</span> Vremenski rok ističe za ${diffDays} dana.`;
+} else {
 statusDesc.innerHTML = `<span class="text-amber-400 font-bold">Uskoro servis!</span> Preostalo još oko ${diffKm.toLocaleString('sr-RS')} km.`;
+}
 } else {
 badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
 badge.innerText = "UREDNO";
