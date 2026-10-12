@@ -608,9 +608,16 @@ license_image_url: licenseUrl
 
 if (vError) {
 console.error("Greška vozilo:", vError);
-showToast("Greška pri čuvanju vozila!");
+showToast("Greška vozilo: " + vError.message);
 return false;
 }
+
+if (rError) {
+console.error("Greška servis:", rError);
+showToast("Greška servis: " + rError.message);
+return false;
+}
+
 
 // 3. Upis ili izmena servisnog zapisa u odvojenu tabelu 'service_records'
 const recordPayload = {
