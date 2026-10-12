@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auto servis DiV - Digitalna Servisna Knjižica</title>
+<title>Auto servis DiV - Profi Digitalna Knjižica</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <!-- Supabase SDK -->
@@ -38,10 +38,10 @@ DiV
 </div>
 <div>
 <h1 class="text-lg font-bold tracking-tight text-white leading-tight">Auto servis DiV</h1>
-<p class="text-xs text-slate-400">Digitalna Servisna Knjižica</p>
+<p class="text-xs text-slate-400">Profi Servisna Knjižica</p>
 </div>
 </div>
-<span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-semibold text-red-400 ring-1 ring-inset ring-red-500/20">v2.19</span>
+<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v3.0 PROFI</span>
 </div>
 <!-- Main Tabs -->
 <div class="max-w-md mx-auto flex border-t border-slate-700/60 bg-slate-800">
@@ -178,15 +178,21 @@ UREDNO
 
 <!-- TAB 2: UNOS / SERVISNI PANEL (ZA MAJSTORA) -->
 <section id="mechanicView" class="hidden space-y-5">
-<button onclick="toggleAllVehiclesModal(true)" class="w-full bg-slate-800 hover:bg-slate-700 active:scale-[0.99] border border-slate-700 text-red-400 font-bold py-3 px-4 rounded-xl shadow-md flex items-center justify-between transition text-xs">
-<span class="flex items-center gap-2">
+<div class="grid grid-cols-2 gap-2">
+<button onclick="toggleAllVehiclesModal(true)" class="bg-slate-800 hover:bg-slate-700 active:scale-[0.99] border border-slate-700 text-red-400 font-bold py-3 px-3 rounded-xl shadow-md flex items-center justify-between transition text-xs">
+<span class="flex items-center gap-1.5">
 <i class="fa-solid fa-database text-sm"></i>
-<span>📋 Sva vozila u bazi</span>
+<span>📋 Lista</span>
 </span>
-<span id="totalVehiclesBadge" class="bg-red-500/20 text-red-300 text-[11px] px-2.5 py-0.5 rounded-full font-mono border border-red-500/30">
-0 vozila
+<span id="totalVehiclesBadge" class="bg-red-500/20 text-red-300 text-[11px] px-2 py-0.5 rounded-full font-mono border border-red-500/30">
+0
 </span>
 </button>
+<button onclick="downloadJSONBackup()" class="bg-slate-800 hover:bg-slate-700 active:scale-[0.99] border border-slate-700 text-emerald-400 font-bold py-3 px-3 rounded-xl shadow-md flex items-center justify-center gap-1.5 transition text-xs">
+<i class="fa-solid fa-download text-sm"></i>
+<span>💾 Backup Baze</span>
+</button>
+</div>
 
 <form id="mechanicForm" onsubmit="handleFormSubmit(event)" class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg space-y-4">
 <input type="hidden" id="editRecordId" value="">
@@ -351,14 +357,14 @@ UREDNO
 <div class="space-y-3 pt-2 border-t border-slate-700">
 <div>
 <label class="block text-xs font-semibold text-slate-300 mb-1">
-<i class="fa-solid fa-camera text-slate-400 mr-1"></i> Slika automobila (Prikazuje se i mušteriji)
+<i class="fa-solid fa-camera text-slate-400 mr-1"></i> Slika automobila (Automatska kompresija)
 </label>
 <input type="file" id="inputCarImage" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-white hover:file:bg-slate-600">
 </div>
 
 <div class="p-2.5 bg-red-950/30 border border-red-500/20 rounded-lg">
 <label class="block text-xs font-semibold text-red-300 mb-1 flex items-center justify-between">
-<span><i class="fa-solid fa-id-card mr-1"></i> Slika saobraćajne dozvole</span>
+<span><i class="fa-solid fa-id-card mr-1"></i> Slika saobraćajne dozvole (Profi Storage)</span>
 <span class="text-[10px] bg-red-900/60 text-red-200 px-1.5 py-0.5 rounded font-mono">SAMO ZA MAJSTORA</span>
 </label>
 <input type="file" id="inputLicenseImage" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-red-900/40 file:text-red-200 hover:file:bg-red-800/50">
@@ -366,13 +372,13 @@ UREDNO
 </div>
 
 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold py-3 px-4 rounded-lg shadow-lg transition duration-200 flex items-center justify-center gap-2 text-sm">
-<i class="fa-solid fa-floppy-disk"></i> Sačuvaj Servisni Zapisnik
+<i class="fa-solid fa-floppy-disk"></i> Sačuvaj Servis u Profi Bazu
 </button>
 </form>
 </section>
 </main>
 
-<!-- Modal: Password Check for Mechanic -->
+<!-- Modal: Password Check -->
 <div id="passwordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
 <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-4">
 <div class="text-center">
@@ -394,13 +400,13 @@ UREDNO
 </div>
 </div>
 
-<!-- Modal: Sva Vozila u Bazi -->
+<!-- Modal: Sva Vozila -->
 <div id="allVehiclesModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex flex-col justify-end sm:justify-center p-0 sm:p-4">
 <div class="bg-slate-900 border border-slate-700 rounded-t-2xl sm:rounded-2xl max-w-md w-full mx-auto h-[85vh] flex flex-col shadow-2xl overflow-hidden">
 <div class="p-3.5 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
 <div>
 <h3 class="font-bold text-white text-sm flex items-center gap-2">
-<i class="fa-solid fa-database text-red-500"></i> Baza svih vozila DiV
+<i class="fa-solid fa-database text-red-500"></i> Profi Baza Vozila DiV
 </h3>
 </div>
 <button onclick="toggleAllVehiclesModal(false)" class="text-slate-400 hover:text-white p-1 text-base">
@@ -422,17 +428,15 @@ Zatvori
 </div>
 </div>
 
-<!-- Notification Toast -->
+<!-- Toast -->
 <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-xl transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center gap-2">
 <i class="fa-solid fa-circle-check"></i>
 <span id="toastMsg">Uspešno sačuvano!</span>
 </div>
 
 <script>
-// Supabase Konfiguracija
 const SUPABASE_URL = 'https://bhfariimxvamqsxrpjjv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_6v6u0ktCBeqf0UkkmXfAsw__NbCa2pH';
-
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const CAR_BRANDS = {
@@ -449,18 +453,16 @@ const CAR_BRANDS = {
 "Hyundai": ["i20", "i30", "Tucson", "Santa Fe"],
 "Kia": ["Ceed", "Sportage", "Rio"],
 "Škoda": ["Fabia", "Octavia", "Superb", "Karoq", "Kodiaq"],
-"Toyota": ["Yaris", "Auris", "Corolla", "RAV4"]
+"Toyota": ["Yaris", "Auris", "Corolla", "RAV4"],
+"Mazda": ["Mazda 2", "Mazda 3", "Mazda 6", "CX-3", "CX-5", "CX-30", "CX-60"]
 };
 
-let appData = {
-vehicles: {}
-};
-
+let appData = { vehicles: {} };
 let isMechanicAuthorized = false;
 let mileageChartInstance = null;
 
 window.onload = async function() {
-await loadFromSupabase();
+await loadFromSupabaseProfi();
 populateBrandDropdown();
 populateYearDropdown();
 setDefaultDate();
@@ -471,73 +473,190 @@ function normalizePlate(plate) {
 return (plate || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 }
 
-async function loadFromSupabase() {
+// Profi učitavanje iz obe tabele (vehicles + service_records)
+async function loadFromSupabaseProfi() {
 try {
-const { data, error } = await supabaseClient
-.from('vehicles')
-.select('*');
+const { data: vehiclesData, error: vError } = await supabaseClient.from('vehicles').select('*');
+const { data: recordsData, error: rError } = await supabaseClient.from('service_records').select('*');
 
-if (error) {
-console.error("Greška pri učitavanju iz baze:", error);
+if (vError || rError) {
+console.error("Greška pri učitavanju iz profi baze:", vError || rError);
 return;
 }
 
 appData.vehicles = {};
-if (data && data.length > 0) {
-data.forEach(row => {
-let parsedRecords = row.records;
-if (typeof parsedRecords === 'string') {
-try { parsedRecords = JSON.parse(parsedRecords); } catch(e) { parsedRecords = []; }
-}
-
-const key = normalizePlate(row.plate);
+if (vehiclesData) {
+vehiclesData.forEach(v => {
+const key = normalizePlate(v.plate);
 appData.vehicles[key] = {
-plate: row.plate,
-brand: row.brand,
-model: row.model,
-year: row.year,
-carImage: row.car_image || '',
-licenseImage: row.license_image || '',
-records: Array.isArray(parsedRecords) ? parsedRecords : []
+plate: v.plate,
+brand: v.brand,
+model: v.model,
+year: v.year,
+carImage: v.car_image_url || '',
+licenseImage: v.license_image_url || '',
+records: []
 };
 });
 }
+
+if (recordsData) {
+recordsData.forEach(r => {
+const key = normalizePlate(r.plate);
+if (appData.vehicles[key]) {
+appData.vehicles[key].records.push({
+id: Number(r.id),
+date: r.date,
+km: r.km,
+maliServis: r.mali_servis,
+velikiServis: r.veliki_servis,
+items: typeof r.items === 'string' ? JSON.parse(r.items) : (r.items || []),
+customNotes: r.custom_notes || ''
+});
+}
+});
+}
 } catch(e) {
-console.error("Greška:", e);
+console.error("Sistemska greška pri loadu:", e);
 }
 updateVehiclesBadgeCount();
 }
 
-async function saveVehicleToSupabase(normKey, vehicleData) {
+// Ultra-Profi kompresor slika pre uploada
+function compressImage(file, maxWidth = 1200, quality = 0.75) {
+return new Promise((resolve) => {
+const reader = new FileReader();
+reader.readAsDataURL(file);
+reader.onload = (event) => {
+const img = new Image();
+img.src = event.target.result;
+img.onload = () => {
+const canvas = document.createElement('canvas');
+let width = img.width;
+let height = img.height;
+
+if (width > maxWidth) {
+height = Math.round((height * maxWidth) / width);
+width = maxWidth;
+}
+
+canvas.width = width;
+canvas.height = height;
+const ctx = canvas.getContext('2d');
+ctx.drawImage(img, 0, 0, width, height);
+canvas.toBlob((blob) => {
+resolve(blob);
+}, 'image/jpeg', quality);
+};
+};
+});
+}
+
+// Upload slike na Supabase Storage bucket 'car-images'
+async function uploadImageToStorage(file, plate, type) {
+if (!file) return null;
 try {
-const payload = {
+const compressedBlob = await compressImage(file);
+const fileName = `${normalizePlate(plate)}_${type}_${Date.now()}.jpg`;
+const { data, error } = await supabaseClient.storage
+.from('car-images')
+.upload(fileName, compressedBlob, { contentType: 'image/jpeg', upsert: true });
+
+if (error) {
+console.error("Greška pri uploadu slike:", error);
+return null;
+}
+
+const { data: publicUrlData } = supabaseClient.storage
+.from('car-images')
+.getPublicUrl(fileName);
+
+return publicUrlData.publicUrl;
+} catch(e) {
+console.error("Greška kompresije/upload-a:", e);
+return null;
+}
+}
+
+// Profi snimanje u bazu (odvojene tabele + Storage)
+async function saveVehicleProfi(normKey, vehicleData, newRecordObj, editingId, carFile, licenseFile) {
+try {
+// 1. Upload slika u Storage ako su priložene
+let carUrl = vehicleData.carImage;
+let licenseUrl = vehicleData.licenseImage;
+
+if (carFile) {
+const uploadedCar = await uploadImageToStorage(carFile, vehicleData.plate, 'car');
+if (uploadedCar) carUrl = uploadedCar;
+}
+if (licenseFile) {
+const uploadedLic = await uploadImageToStorage(licenseFile, vehicleData.plate, 'license');
+if (uploadedLic) licenseUrl = uploadedLic;
+}
+
+// 2. Upsert osnovnih podataka vozila
+const { error: vError } = await supabaseClient
+.from('vehicles')
+.upsert({
 plate: vehicleData.plate,
 brand: vehicleData.brand,
 model: vehicleData.model,
 year: vehicleData.year,
-car_image: vehicleData.carImage,
-license_image: vehicleData.licenseImage,
-records: vehicleData.records
+car_image_url: carUrl,
+license_image_url: licenseUrl
+}, { onConflict: 'plate' });
+
+if (vError) {
+console.error("Greška vozilo:", vError);
+showToast("Greška pri čuvanju vozila!");
+return false;
+}
+
+// 3. Upis ili izmena servisnog zapisa u odvojenu tabelu 'service_records'
+const recordPayload = {
+id: editingId ? Number(editingId) : newRecordObj.id,
+plate: vehicleData.plate,
+date: newRecordObj.date,
+km: newRecordObj.km,
+mali_servis: newRecordObj.maliServis,
+veliki_servis: newRecordObj.velikiServis,
+items: newRecordObj.items,
+custom_notes: newRecordObj.customNotes
 };
 
-const { error } = await supabaseClient
-.from('vehicles')
-.upsert(payload, { onConflict: 'plate' });
+const { error: rError } = await supabaseClient
+.from('service_records')
+.upsert(recordPayload, { onConflict: 'id' });
 
-if (error) {
-console.error("Greška pri upisu u bazu:", error);
-showToast("Greška pri upisu u bazu!");
-} else {
-await loadFromSupabase();
+if (rError) {
+console.error("Greška servisni zapis:", rError);
+showToast("Greška pri čuvanju servisa!");
+return false;
 }
+
+await loadFromSupabaseProfi();
+return true;
 } catch(e) {
-console.error("Sistemska greška pri slanju u bazu:", e);
+console.error("Profi save exception:", e);
+return false;
 }
+}
+
+// Lokalni Backup Baze
+function downloadJSONBackup() {
+const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+const downloadAnchor = document.createElement('a');
+downloadAnchor.setAttribute("href", dataStr);
+downloadAnchor.setAttribute("download", `autoservis_div_backup_${new Date().toISOString().split('T')[0]}.json`);
+document.body.appendChild(downloadAnchor);
+downloadAnchor.click();
+downloadAnchor.remove();
+showToast("Backup uspešno preuzet!");
 }
 
 function updateVehiclesBadgeCount() {
 const count = Object.keys(appData.vehicles).length;
-document.getElementById('totalVehiclesBadge').innerText = `${count} vozil${count === 1 ? 'o' : 'a'}`;
+document.getElementById('totalVehiclesBadge').innerText = count;
 }
 
 function tryOpenMechanicTab() {
@@ -550,14 +669,11 @@ document.getElementById('passwordModal').classList.remove('hidden');
 }
 }
 
-function closePasswordModal() {
-document.getElementById('passwordModal').classList.add('hidden');
-}
+function closePasswordModal() { document.getElementById('passwordModal').classList.add('hidden'); }
 
 function handlePasswordSubmit(e) {
 e.preventDefault();
-const pass = document.getElementById('mechanicPasswordInput').value;
-if (pass === 'admin123') {
+if (document.getElementById('mechanicPasswordInput').value === 'admin123') {
 isMechanicAuthorized = true;
 closePasswordModal();
 switchTab('mechanic');
@@ -594,7 +710,6 @@ opt.value = brand;
 opt.textContent = brand;
 brandSelect.appendChild(opt);
 });
-
 const customOpt = document.createElement('option');
 customOpt.value = "CUSTOM_NEW";
 customOpt.textContent = "+ Dodaj novu marku...";
@@ -604,7 +719,6 @@ brandSelect.appendChild(customOpt);
 function handleBrandChange() {
 const brandSelect = document.getElementById('inputBrand');
 const customBrandInput = document.getElementById('inputCustomBrand');
-
 if (brandSelect.value === 'CUSTOM_NEW') {
 customBrandInput.classList.remove('hidden');
 customBrandInput.required = true;
@@ -621,7 +735,6 @@ function updateModels() {
 const brandSelect = document.getElementById('inputBrand');
 const modelSelect = document.getElementById('inputModel');
 const customModelInput = document.getElementById('inputCustomModel');
-
 customModelInput.classList.add('hidden');
 customModelInput.required = false;
 customModelInput.value = '';
@@ -637,7 +750,6 @@ opt.textContent = model;
 modelSelect.appendChild(opt);
 });
 }
-
 const customOpt = document.createElement('option');
 customOpt.value = "CUSTOM_NEW";
 customOpt.textContent = "+ Dodaj novi model...";
@@ -645,15 +757,13 @@ modelSelect.appendChild(customOpt);
 }
 
 function updateModelsForCustomBrand() {
-const modelSelect = document.getElementById('inputModel');
-modelSelect.innerHTML = '<option value="CUSTOM_NEW">+ Dodaj novi model...</option>';
+document.getElementById('inputModel').innerHTML = '<option value="CUSTOM_NEW">+ Dodaj novi model...</option>';
 handleModelChange();
 }
 
 function handleModelChange() {
 const modelSelect = document.getElementById('inputModel');
 const customModelInput = document.getElementById('inputCustomModel');
-
 if (modelSelect.value === 'CUSTOM_NEW') {
 customModelInput.classList.remove('hidden');
 customModelInput.required = true;
@@ -676,25 +786,20 @@ yearSelect.appendChild(opt);
 }
 
 function setDefaultDate() {
-const today = new Date().toISOString().split('T')[0];
-document.getElementById('inputDate').value = today;
+document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
 }
 
 function handlePlateInputAutoDetect() {
-const rawPlate = document.getElementById('inputPlate').value;
-const normKey = normalizePlate(rawPlate);
+const normKey = normalizePlate(document.getElementById('inputPlate').value);
 const noticeEl = document.getElementById('autoDetectNotice');
-
 if (normKey && appData.vehicles[normKey]) {
 const existing = appData.vehicles[normKey];
 noticeEl.classList.remove('hidden');
-
 const brandSelect = document.getElementById('inputBrand');
 if (CAR_BRANDS[existing.brand]) {
 brandSelect.value = existing.brand;
 handleBrandChange();
-const modelSelect = document.getElementById('inputModel');
-modelSelect.value = existing.model;
+document.getElementById('inputModel').value = existing.model;
 handleModelChange();
 } else {
 brandSelect.value = "CUSTOM_NEW";
@@ -703,27 +808,19 @@ document.getElementById('inputCustomBrand').value = existing.brand;
 handleModelChange();
 document.getElementById('inputCustomModel').value = existing.model;
 }
-
-const yearSelect = document.getElementById('inputYear');
-yearSelect.value = existing.year;
+document.getElementById('inputYear').value = existing.year;
 } else {
 noticeEl.classList.add('hidden');
 }
 }
 
 function searchVehicle() {
-const plateInput = document.getElementById('searchPlate').value;
-const normKey = normalizePlate(plateInput);
+const normKey = normalizePlate(document.getElementById('searchPlate').value);
 const currentKmInput = parseInt(document.getElementById('searchKm').value) || 0;
-
 const resultCard = document.getElementById('customerResultCard');
 const notFoundCard = document.getElementById('noVehicleFound');
 
-if (!normKey) {
-showToast("Unesite registarsku tablicu!");
-return;
-}
-
+if (!normKey) { showToast("Unesite registarsku tablicu!"); return; }
 const vehicle = appData.vehicles[normKey];
 
 if (!vehicle || !vehicle.records || vehicle.records.length === 0) {
@@ -757,12 +854,8 @@ document.getElementById('resLastKm').innerText = `${latestRecord.km.toLocaleStri
 document.getElementById('resLastDate').innerText = formatDate(latestRecord.date);
 
 const activeKm = currentKmInput > latestRecord.km ? currentKmInput : latestRecord.km;
-
-const lastMali = sortedRecords.slice().reverse().find(r => r.maliServis);
-updateServiceStatusUI('mali', lastMali, activeKm, 10000, 365);
-
-const lastVeliki = sortedRecords.slice().reverse().find(r => r.velikiServis);
-updateServiceStatusUI('veliki', lastVeliki, activeKm, 60000, 365 * 5);
+updateServiceStatusUI('mali', sortedRecords.slice().reverse().find(r => r.maliServis), activeKm, 10000, 365);
+updateServiceStatusUI('veliki', sortedRecords.slice().reverse().find(r => r.velikiServis), activeKm, 60000, 365 * 5);
 
 renderServiceHistory([...vehicle.records].sort((a, b) => b.km - a.km), vehicle.plate);
 renderMileageChart(sortedRecords);
@@ -770,21 +863,15 @@ renderMileageChart(sortedRecords);
 
 function renderMileageChart(sortedRecords) {
 const ctx = document.getElementById('mileageChart').getContext('2d');
-
-if (mileageChartInstance) {
-mileageChartInstance.destroy();
-}
-
-const labels = sortedRecords.map(r => formatDate(r.date));
-const dataKm = sortedRecords.map(r => r.km);
+if (mileageChartInstance) mileageChartInstance.destroy();
 
 mileageChartInstance = new Chart(ctx, {
 type: 'line',
 data: {
-labels: labels,
+labels: sortedRecords.map(r => formatDate(r.date)),
 datasets: [{
 label: 'Kilometraža (km)',
-data: dataKm,
+data: sortedRecords.map(r => r.km),
 borderColor: '#ef4444',
 backgroundColor: 'rgba(239, 68, 68, 0.1)',
 borderWidth: 2.5,
@@ -795,20 +882,11 @@ tension: 0.2
 }]
 },
 options: {
-responsive: true,
-maintainAspectRatio: false,
-plugins: {
-legend: { display: false }
-},
+responsive: true, maintainAspectRatio: false,
+plugins: { legend: { display: false } },
 scales: {
-x: {
-ticks: { color: '#94a3b8', font: { size: 10 } },
-grid: { color: '#334155' }
-},
-y: {
-ticks: { color: '#94a3b8', font: { size: 10 } },
-grid: { color: '#334155' }
-}
+x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } },
+y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
 }
 }
 });
@@ -827,226 +905,152 @@ badge.innerText = "NEMA PODATAKA";
 doneKmEl.innerText = "Nije evidentiran";
 doneDateEl.innerText = "-";
 nextKmEl.innerText = "-";
-statusDesc.innerText = "Nema prethodnih zapisa u bazi za ovu vrstu servisa.";
+statusDesc.innerText = "Nema prethodnih zapisa u bazi.";
 return;
 }
 
 doneKmEl.innerText = `${lastRecord.km.toLocaleString('sr-RS')} km`;
 doneDateEl.innerText = formatDate(lastRecord.date);
-
 const nextKm = lastRecord.km + kmInterval;
 nextKmEl.innerText = `${nextKm.toLocaleString('sr-RS')} km`;
 
 const diffKm = nextKm - currentKm;
-const doneDate = new Date(lastRecord.date);
-const nextDate = new Date(doneDate.getTime() + (daysInterval * 24 * 60 * 60 * 1000));
-const today = new Date();
-const diffDays = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+const nextDate = new Date(new Date(lastRecord.date).getTime() + (daysInterval * 24 * 60 * 60 * 1000));
+const diffDays = Math.ceil((nextDate - new Date()) / (1000 * 60 * 60 * 24));
 
 if (diffKm <= 0 || diffDays <= 0) {
 badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-red-500/20 text-red-400 border border-red-500/30";
 badge.innerText = "ISTEKAO";
-statusDesc.innerHTML = `<span class="text-red-400 font-bold">Servis je istekao!</span> Prekoračeno za ${Math.abs(diffKm).toLocaleString('sr-RS')} km.`;
+statusDesc.innerHTML = `<span class="text-red-400 font-bold">Servis istekao!</span> Prekoračeno za ${Math.abs(diffKm).toLocaleString('sr-RS')} km.`;
 } else if (diffKm <= 1500 || diffDays <= 30) {
 badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30";
 badge.innerText = "USKORO";
-statusDesc.innerHTML = `<span class="text-amber-400 font-bold">Uskoro servis!</span> Preostalo još oko ${diffKm.toLocaleString('sr-RS')} km ili ${diffDays} dana.`;
+statusDesc.innerHTML = `<span class="text-amber-400 font-bold">Uskoro servis!</span> Preostalo još oko ${diffKm.toLocaleString('sr-RS')} km.`;
 } else {
 badge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
 badge.innerText = "UREDNO";
-statusDesc.innerHTML = `<span class="text-emerald-400 font-bold">Sve je u redu.</span> Preostalo još ${diffKm.toLocaleString('sr-RS')} km do sledećeg servisa.`;
+statusDesc.innerHTML = `<span class="text-emerald-400 font-bold">Sve u redu.</span> Preostalo još ${diffKm.toLocaleString('sr-RS')} km.`;
 }
 }
 
 function renderServiceHistory(records, plate) {
 const container = document.getElementById('serviceHistoryList');
 container.innerHTML = '';
-
 records.forEach((rec) => {
 const itemEl = document.createElement('div');
 itemEl.className = "bg-slate-900/80 border border-slate-700/80 rounded-lg p-3 space-y-2";
-
-let itemsListHtml = '';
-if (rec.items && rec.items.length > 0) {
-itemsListHtml = '<ul class="space-y-1 my-2 text-xs text-slate-200">';
-rec.items.forEach(item => {
-itemsListHtml += `<li class="flex items-center gap-2"> <span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span> <span>${item}</span> </li>`;
-});
-itemsListHtml += '</ul>';
-}
-
-let customNotesHtml = '';
-if (rec.customNotes) {
-customNotesHtml = `<div class="mt-2 pt-2 border-t border-slate-800 text-xs text-slate-400 italic"> <strong class="text-slate-300 not-italic">Napomena:</strong> ${rec.customNotes} </div>`;
-}
-
-let adminActionsHtml = '';
-if (isMechanicAuthorized) {
-adminActionsHtml = `
-<div class="pt-2 border-t border-slate-800 flex justify-end gap-2">
-<button onclick="editRecord('${plate}', ${rec.id})" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded border border-slate-700 flex items-center gap-1">
-<i class="fa-solid fa-pen-to-square"></i> Izmeni
-</button>
-<button onclick="deleteRecord('${plate}', ${rec.id})" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-red-400 px-2.5 py-1 rounded border border-slate-700 flex items-center gap-1">
-<i class="fa-solid fa-trash"></i> Obriši
-</button>
-</div>
-`;
-}
+let itemsHtml = (rec.items || []).map(i => `<li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span><span>${i}</span></li>`).join('');
 
 itemEl.innerHTML = `
 <div class="flex justify-between items-center text-xs pb-1.5 border-b border-slate-800">
 <span class="font-bold text-white"><i class="fa-solid fa-calendar-day text-red-400 mr-1"></i> ${formatDate(rec.date)}</span>
 <span class="font-mono text-slate-300 font-semibold bg-slate-800 px-2 py-0.5 rounded">${rec.km.toLocaleString('sr-RS')} km</span>
 </div>
-${itemsListHtml}
-${customNotesHtml}
-${adminActionsHtml}
+${itemsHtml ? `<ul class="space-y-1 my-2 text-xs text-slate-200">${itemsHtml}</ul>` : ''}
+${rec.customNotes ? `<div class="mt-2 pt-2 border-t border-slate-800 text-xs text-slate-400 italic"><strong>Napomena:</strong> ${rec.customNotes}</div>` : ''}
+${isMechanicAuthorized ? `<div class="pt-2 border-t border-slate-800 flex justify-end gap-2"><button onclick="editRecord('${plate}',${rec.id})" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded border border-slate-700"><i class="fa-solid fa-pen-to-square"></i> Izmeni</button><button onclick="deleteRecord('${plate}',${rec.id})" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-red-400 px-2.5 py-1 rounded border border-slate-700"><i class="fa-solid fa-trash"></i> Obriši</button></div>` : ''}
 `;
-
 container.appendChild(itemEl);
 });
 }
 
 async function handleFormSubmit(e) {
 e.preventDefault();
-
 const submitBtn = e.target.querySelector('button[type="submit"]');
 const originalBtnHtml = submitBtn.innerHTML;
 submitBtn.disabled = true;
-submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Čuvanje u bazi...`;
+submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Profi kompresija i upload...`;
 
 const rawPlate = document.getElementById('inputPlate').value.trim();
 const normKey = normalizePlate(rawPlate);
-
-const brandSelect = document.getElementById('inputBrand').value;
-const customBrand = document.getElementById('inputCustomBrand').value.trim();
-const brand = (brandSelect === 'CUSTOM_NEW') ? customBrand : brandSelect;
-
-const modelSelect = document.getElementById('inputModel').value;
-const customModel = document.getElementById('inputCustomModel').value.trim();
-const model = (modelSelect === 'CUSTOM_NEW') ? customModel : modelSelect;
-
+const brand = (document.getElementById('inputBrand').value === 'CUSTOM_NEW') ? document.getElementById('inputCustomBrand').value.trim() : document.getElementById('inputBrand').value;
+const model = (document.getElementById('inputModel').value === 'CUSTOM_NEW') ? document.getElementById('inputCustomModel').value.trim() : document.getElementById('inputModel').value;
 const year = document.getElementById('inputYear').value;
 const date = document.getElementById('inputDate').value;
 const km = parseInt(document.getElementById('inputKm').value);
 const customNotes = document.getElementById('inputCustomWork').value.trim();
 const editingId = document.getElementById('editRecordId').value;
 
-const checkboxes = document.querySelectorAll('input[name="workDone"]:checked');
-const selectedItems = Array.from(checkboxes).map(cb => cb.value);
-
+const selectedItems = Array.from(document.querySelectorAll('input[name="workDone"]:checked')).map(cb => cb.value);
 const maliServisDone = selectedItems.some(i => i.includes('Ulje') || i.includes('Filter'));
 const velikiServisDone = selectedItems.some(i => i.includes('Zupčastog') || i.includes('Vodena pumpa'));
 
-const carImgFile = document.getElementById('inputCarImage').files[0];
-const licenseImgFile = document.getElementById('inputLicenseImage').files[0];
+const carFile = document.getElementById('inputCarImage').files[0];
+const licenseFile = document.getElementById('inputLicenseImage').files[0];
 
-let carImgBase64 = '';
-let licenseImgBase64 = '';
-
-if (carImgFile) carImgBase64 = await fileToBase64(carImgFile);
-if (licenseImgFile) licenseImgBase64 = await fileToBase64(licenseImgFile);
-
-let existingRecords = [];
-let existingCarImg = '';
-let existingLicenseImg = '';
-
-if (appData.vehicles && appData.vehicles[normKey]) {
-existingRecords = appData.vehicles[normKey].records || [];
-existingCarImg = appData.vehicles[normKey].carImage || '';
-existingLicenseImg = appData.vehicles[normKey].licenseImage || '';
-}
-
-if (editingId) {
-existingRecords = existingRecords.map(r => {
-if (r.id == editingId) {
-return {
-...r,
-date: date,
-km: km,
-maliServis: maliServisDone,
-velikiServis: velikiServisDone,
-items: selectedItems,
-customNotes: customNotes
-};
-}
-return r;
-});
-} else {
-const newRecord = {
-id: Date.now(),
-date: date,
-km: km,
-maliServis: maliServisDone,
-velikiServis: velikiServisDone,
-items: selectedItems,
-customNotes: customNotes
-};
-existingRecords.push(newRecord);
-}
-
-appData.vehicles[normKey] = {
+let existingVehicle = appData.vehicles[normKey] || {
 plate: rawPlate.toUpperCase(),
 brand: brand,
 model: model,
 year: year,
-carImage: carImgBase64 ? carImgBase64 : existingCarImg,
-licenseImage: licenseImgBase64 ? licenseImgBase64 : existingLicenseImg,
-records: existingRecords
+carImage: '',
+licenseImage: '',
+records: []
 };
 
-await saveVehicleToSupabase(normKey, appData.vehicles[normKey]);
+let recordObj = {
+id: editingId ? Number(editingId) : Date.now(),
+date: date,
+km: km,
+maliServis: maliServisDone,
+velikiServis: velikiServisDone,
+items: selectedItems,
+customNotes: customNotes
+};
+
+if (editingId) {
+existingVehicle.records = existingVehicle.records.map(r => r.id == editingId ? recordObj : r);
+} else {
+existingVehicle.records.push(recordObj);
+}
+
+existingVehicle.brand = brand;
+existingVehicle.model = model;
+existingVehicle.year = year;
+
+const success = await saveVehicleProfi(normKey, existingVehicle, recordObj, editingId, carFile, licenseFile);
 
 submitBtn.disabled = false;
 submitBtn.innerHTML = originalBtnHtml;
 
+if (success) {
 showToast(editingId ? "Servis uspešno izmenjen!" : "Vozilo i servis uspešno upisani u bazu!");
-
 resetFormMode();
 document.getElementById('searchPlate').value = rawPlate;
 switchTab('customer');
 searchVehicle();
 }
+}
 
 function editRecord(plate, recordId) {
 const vehicle = appData.vehicles[normalizePlate(plate)];
 if (!vehicle) return;
-
 const record = vehicle.records.find(r => r.id === recordId);
 if (!record) return;
 
 switchTab('mechanic');
-
 document.getElementById('inputPlate').value = vehicle.plate;
 handlePlateInputAutoDetect();
-
 document.getElementById('inputDate').value = record.date;
 document.getElementById('inputKm').value = record.km;
 document.getElementById('inputCustomWork').value = record.customNotes || '';
 document.getElementById('editRecordId').value = record.id;
-
-document.querySelectorAll('input[name="workDone"]').forEach(cb => {
-cb.checked = record.items && record.items.includes(cb.value);
-});
-
+document.querySelectorAll('input[name="workDone"]').forEach(cb => { cb.checked = record.items && record.items.includes(cb.value); });
 document.getElementById('formTitleText').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-400"></i> Izmena servisnog zapisa`;
 document.getElementById('cancelEditBtn').classList.remove('hidden');
 window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function deleteRecord(plate, recordId) {
-if (!confirm("Da li ste sigurni da želite da obrišete ovaj servisni zapisnik?")) return;
-
+if (!confirm("Da li ste sigurni da želite da obrišete ovaj zapis?")) return;
 const normKey = normalizePlate(plate);
-const vehicle = appData.vehicles[normKey];
-if (!vehicle) return;
-
-vehicle.records = vehicle.records.filter(r => r.id !== recordId);
-
-await saveVehicleToSupabase(normKey, vehicle);
-showToast("Zapisnik obrisan!");
-
+const { error } = await supabaseClient.from('service_records').delete().eq('id', recordId);
+if (error) {
+showToast("Greška pri brisanju!");
+return;
+}
+showToast("Zapis obrisan!");
+await loadFromSupabaseProfi();
 document.getElementById('searchPlate').value = plate;
 searchVehicle();
 }
@@ -1064,12 +1068,7 @@ setDefaultDate();
 
 function toggleAllVehiclesModal(show) {
 const modal = document.getElementById('allVehiclesModal');
-if (show) {
-renderAllVehiclesList();
-modal.classList.remove('hidden');
-} else {
-modal.classList.add('hidden');
-}
+if (show) { renderAllVehiclesList(); modal.classList.remove('hidden'); } else { modal.classList.add('hidden'); }
 }
 
 function renderAllVehiclesList() {
@@ -1077,13 +1076,9 @@ const container = document.getElementById('modalVehiclesContainer');
 const query = document.getElementById('modalSearchInput').value.toLowerCase().trim();
 container.innerHTML = '';
 
-const keys = Object.keys(appData.vehicles);
-const filteredKeys = keys.filter(k => {
+const filteredKeys = Object.keys(appData.vehicles).filter(k => {
 const v = appData.vehicles[k];
-return k.toLowerCase().includes(query) ||
-v.plate.toLowerCase().includes(query) ||
-v.brand.toLowerCase().includes(query) ||
-v.model.toLowerCase().includes(query);
+return k.toLowerCase().includes(query) || v.plate.toLowerCase().includes(query) || v.brand.toLowerCase().includes(query) || v.model.toLowerCase().includes(query);
 });
 
 if (filteredKeys.length === 0) {
@@ -1093,40 +1088,20 @@ return;
 
 filteredKeys.forEach(normKey => {
 const v = appData.vehicles[normKey];
-const sorted = [...v.records].sort((a,b) => b.km - a.km);
-const lastRec = sorted[0] || { km: 0, date: '-' };
-
-const card = document.createElement('div');
-card.className = "bg-slate-800 border border-slate-700 rounded-xl p-3 space-y-2 shadow-sm";
-
-let licensePreviewHtml = '';
-if (v.licenseImage) {
-licensePreviewHtml = `<div class="mt-2 pt-2 border-t border-slate-700 flex items-center justify-between"> <span class="text-[10px] text-red-400 font-mono font-semibold">SAOBRAĆAJNA DOZVOLA:</span> <button onclick="viewLicenseModal('${v.licenseImage}')" class="text-xs bg-slate-900 border border-slate-700 text-slate-200 px-2.5 py-1 rounded hover:bg-slate-700 flex items-center gap-1"> <i class="fa-solid fa-eye text-red-400"></i> Pogledaj </button> </div>`;
-}
-
-card.innerHTML = `
+const lastRec = [...v.records].sort((a,b) => b.km - a.km)[0] || { km: 0 };
+container.innerHTML += `
+<div class="bg-slate-800 border border-slate-700 rounded-xl p-3 space-y-2 shadow-sm">
 <div class="flex justify-between items-start">
-<div>
-<h4 class="font-bold text-white text-sm">${v.brand} ${v.model}</h4>
-<p class="text-xs text-slate-400">Godište: ${v.year || '-'}</p>
-</div>
-<span class="font-mono font-bold text-red-400 bg-slate-900 border border-slate-700 px-2 py-0.5 rounded text-xs">
-${v.plate}
-</span>
+<div><h4 class="font-bold text-white text-sm">${v.brand} ${v.model}</h4><p class="text-xs text-slate-400">Godište: ${v.year || '-'}</p></div>
+<span class="font-mono font-bold text-red-400 bg-slate-900 border border-slate-700 px-2 py-0.5 rounded text-xs">${v.plate}</span>
 </div>
 <div class="text-xs text-slate-300 flex justify-between bg-slate-900/50 p-2 rounded border border-slate-700/40">
 <span>Zadnja KM: <strong class="text-white">${lastRec.km.toLocaleString('sr-RS')} km</strong></span>
-<span>Broj servisa: <strong class="text-white">${v.records.length}</strong></span>
+<span>Servisa: <strong class="text-white">${v.records.length}</strong></span>
 </div>
-${licensePreviewHtml}
-<div class="pt-1">
-<button onclick="selectVehicleFromModal('${v.plate}')" class="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-1.5 rounded transition">
-Proveri Karton
-</button>
-</div>
-`;
-
-container.appendChild(card);
+${v.licenseImage ? `<div class="pt-1 flex justify-between items-center"><span class="text-[10px] text-red-400 font-mono">SAOBRAĆAJNA:</span><a href="${v.licenseImage}" target="_blank" class="text-xs bg-slate-900 border border-slate-700 text-slate-200 px-2.5 py-1 rounded hover:bg-slate-700"><i class="fa-solid fa-eye text-red-400"></i> Pogledaj</a></div>` : ''}
+<button onclick="selectVehicleFromModal('${v.plate}')" class="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-1.5 rounded transition mt-1">Proveri Karton</button>
+</div>`;
 });
 }
 
@@ -1137,36 +1112,17 @@ switchTab('customer');
 searchVehicle();
 }
 
-function viewLicenseModal(imgSrc) {
-const win = window.open("");
-win.document.write(`<body style="margin:0;background:#0f172a;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${imgSrc}" style="max-width:100%;max-height:100vh;object-fit:contain;"/></body>`);
-}
-
 function formatDate(dateStr) {
-if (!dateStr || dateStr === '-') return '-';
-const parts = dateStr.split('-');
-if (parts.length === 3) {
-return `${parts[2]}.${parts[1]}.${parts[0]}.`;
-}
-return dateStr;
-}
-
-function fileToBase64(file) {
-return new Promise((resolve, reject) => {
-const reader = new FileReader();
-reader.readAsDataURL(file);
-reader.onload = () => resolve(reader.result);
-reader.onerror = error => reject(error);
-});
+if (!dateStr) return '-';
+const p = dateStr.split('-');
+return p.length === 3 ? `${p[2]}.${p[1]}.${p[0]}.` : dateStr;
 }
 
 function showToast(msg) {
 const toast = document.getElementById('toast');
 document.getElementById('toastMsg').innerText = msg;
 toast.classList.remove('opacity-0', 'pointer-events-none');
-setTimeout(() => {
-toast.classList.add('opacity-0', 'pointer-events-none');
-}, 3000);
+setTimeout(() => { toast.classList.add('opacity-0', 'pointer-events-none'); }, 3000);
 }
 </script>
 </body>
