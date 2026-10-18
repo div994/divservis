@@ -43,7 +43,7 @@ DiV
 </div>
 <div class="flex items-center gap-2">
 <span id="authRoleBadge" class="hidden text-[10px] font-mono px-2 py-0.5 rounded font-bold"></span>
-<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v2.4</span>
+<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v2.5</span>
 </div>
 </div>
 <!-- Main Tabs -->
@@ -1405,9 +1405,19 @@ searchVehicle();
 }
 
 function editRecord(plate, recordId) {
-const vehicle = appData.vehicles[normalizePlate(plate)];
+let targetPlate = plate;
+if (!targetPlate) {
+Object.values(appData.vehicles).forEach(v => {
+if ((v.records || []).some(r => Number(r.id) === Number(recordId))) {
+targetPlate = v.plate;
+}
+});
+}
+
+const normKey = normalizePlate(targetPlate);
+const vehicle = appData.vehicles[normKey];
 if (!vehicle) return;
-const record = vehicle.records.find(r => r.id === recordId);
+const record = vehicle.records.find(r => Number(r.id) === Number(recordId));
 if (!record) return;
 
 switchTab('mechanic');
