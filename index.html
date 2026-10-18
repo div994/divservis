@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="sr" class="h-full bg-slate-900 text-slate-100">
 <head>
@@ -44,7 +43,7 @@ DiV
 </div>
 <div class="flex items-center gap-2">
 <span id="authRoleBadge" class="hidden text-[10px] font-mono px-2 py-0.5 rounded font-bold"></span>
-<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v2.1</span>
+<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v2.2</span>
 </div>
 </div>
 <!-- Main Tabs -->
@@ -181,25 +180,31 @@ UREDNO
 </div>
 </section>
 
-<!-- TAB 2: SERVISNI PANEL (ZA MAJSTORE I VLASNIKA) -->
+<!-- TAB 2: SERVISNI PANEL (ZA MAJSTORE I MASTERA) -->
 <section id="mechanicView" class="hidden space-y-5">
 <!-- Finansijski Modul (Vidljiv SAMO za master123) -->
 <div id="masterFinanceCard" class="hidden bg-gradient-to-br from-slate-800 to-slate-900 border border-emerald-500/40 rounded-xl p-4 shadow-xl space-y-3">
 <div class="flex justify-between items-center border-b border-slate-700 pb-2">
 <h3 class="font-bold text-emerald-400 text-sm flex items-center gap-2">
-<i class="fa-solid fa-wallet"></i> Finansijski Izveštaj (Vlasnik)
+<i class="fa-solid fa-wallet"></i> Finansijski Izveštaj (Master)
 </h3>
 <button onclick="toggleFinanceDetails()" class="text-xs bg-slate-700 hover:bg-slate-600 text-emerald-300 px-2.5 py-1 rounded">Prikaži / Sakrij</button>
 </div>
 <div id="financeContent" class="hidden space-y-3 pt-1">
-<div class="grid grid-cols-2 gap-2 text-center">
-<div class="bg-slate-950/70 p-2.5 rounded-lg border border-slate-700/60">
-<p class="text-[11px] text-slate-400">Promet danas</p>
-<p id="finToday" class="text-base font-bold text-emerald-400 mt-0.5">0 RSD</p>
+<div class="bg-slate-950/70 p-3 rounded-lg border border-slate-700/60 space-y-2">
+<p class="text-xs font-bold text-emerald-400 border-b border-slate-800 pb-1">Danas</p>
+<div class="grid grid-cols-3 gap-1 text-center text-xs">
+<div><p class="text-[10px] text-slate-400">Ruke</p><p id="finTodayLabor" class="font-bold text-white">0 RSD</p></div>
+<div><p class="text-[10px] text-slate-400">Materijal</p><p id="finTodayParts" class="font-bold text-white">0 RSD</p></div>
+<div><p class="text-[10px] text-slate-400">Ukupno</p><p id="finTodayTotal" class="font-bold text-emerald-400">0 RSD</p></div>
 </div>
-<div class="bg-slate-950/70 p-2.5 rounded-lg border border-slate-700/60">
-<p class="text-[11px] text-slate-400">Promet ovaj mesec</p>
-<p id="finMonth" class="text-base font-bold text-emerald-400 mt-0.5">0 RSD</p>
+</div>
+<div class="bg-slate-950/70 p-3 rounded-lg border border-slate-700/60 space-y-2">
+<p class="text-xs font-bold text-emerald-400 border-b border-slate-800 pb-1">Ovaj Mesec</p>
+<div class="grid grid-cols-3 gap-1 text-center text-xs">
+<div><p class="text-[10px] text-slate-400">Ruke</p><p id="finMonthLabor" class="font-bold text-white">0 RSD</p></div>
+<div><p class="text-[10px] text-slate-400">Materijal</p><p id="finMonthParts" class="font-bold text-white">0 RSD</p></div>
+<div><p class="text-[10px] text-slate-400">Ukupno</p><p id="finMonthTotal" class="font-bold text-emerald-400">0 RSD</p></div>
 </div>
 </div>
 </div>
@@ -269,15 +274,20 @@ UREDNO
 </div>
 </div>
 
-<div class="grid grid-cols-2 gap-2">
 <div>
 <label class="block text-xs font-semibold text-slate-300 mb-1">Kilometraža (km) *</label>
 <input type="number" id="inputKm" required placeholder="npr. 185000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-semibold focus:outline-none focus:border-red-500 text-xs">
 </div>
-<!-- Polje za cenu (Vidljivo SAMO za master nivo) -->
-<div id="masterPriceContainer" class="hidden">
-<label class="block text-xs font-semibold text-emerald-400 mb-1">Cena / Zarada (RSD)</label>
-<input type="number" id="inputPrice" placeholder="npr. 12000" class="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-3 py-2 text-white font-semibold focus:outline-none focus:border-emerald-400 text-xs">
+
+<!-- Polja za cene (Vidljiva SAMO za master nivo) -->
+<div id="masterPriceContainer" class="hidden grid grid-cols-2 gap-2 p-2.5 bg-slate-950/60 border border-emerald-500/30 rounded-lg">
+<div>
+<label class="block text-[11px] font-semibold text-emerald-400 mb-1">Ruke / Rad (RSD)</label>
+<input type="number" id="inputLaborPrice" placeholder="npr. 4000" class="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-2.5 py-1.5 text-white font-semibold focus:outline-none focus:border-emerald-400 text-xs">
+</div>
+<div>
+<label class="block text-[11px] font-semibold text-emerald-400 mb-1">Materijal / Delovi (RSD)</label>
+<input type="number" id="inputPartsPrice" placeholder="npr. 8000" class="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-2.5 py-1.5 text-white font-semibold focus:outline-none focus:border-emerald-400 text-xs">
 </div>
 </div>
 </div>
@@ -412,7 +422,7 @@ UREDNO
 </section>
 </main>
 
-<!-- Modal: Password Check (Automatski prepoznaje admin123 ili master123) -->
+<!-- Modal: Password Check -->
 <div id="passwordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
 <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-4">
 <div class="text-center">
@@ -546,7 +556,8 @@ maliServis: r.mali_servis,
 velikiServis: r.veliki_servis,
 items: typeof r.items === 'string' ? JSON.parse(r.items) : (r.items || []),
 customNotes: r.custom_notes || '',
-price: Number(r.price) || 0
+laborPrice: Number(r.labor_price) || 0,
+partsPrice: Number(r.parts_price) || 0
 });
 }
 });
@@ -652,7 +663,8 @@ mali_servis: newRecordObj.maliServis,
 veliki_servis: newRecordObj.velikiServis,
 items: newRecordObj.items,
 custom_notes: newRecordObj.customNotes,
-price: newRecordObj.price
+labor_price: newRecordObj.laborPrice,
+parts_price: newRecordObj.partsPrice
 };
 
 const { error: rError } = await supabaseClient
@@ -727,7 +739,7 @@ const masterFinanceCard = document.getElementById('masterFinanceCard');
 const masterPriceContainer = document.getElementById('masterPriceContainer');
 
 if (userRole === 'master') {
-roleBadge.innerText = 'VLASNIK';
+roleBadge.innerText = 'MASTER';
 roleBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 inline-block";
 masterFinanceCard.classList.remove('hidden');
 masterPriceContainer.classList.remove('hidden');
@@ -750,21 +762,35 @@ content.classList.toggle('hidden');
 
 function calculateFinanceSummary() {
 if (userRole !== 'master') return;
-let todayTotal = 0;
-let monthTotal = 0;
+let todayLabor = 0, todayParts = 0;
+let monthLabor = 0, monthParts = 0;
+
 const todayStr = new Date().toISOString().split('T')[0];
 const currentMonth = todayStr.substring(0, 7); // YYYY-MM
 
 Object.values(appData.vehicles).forEach(v => {
 (v.records || []).forEach(r => {
-const price = Number(r.price) || 0;
-if (r.date === todayStr) todayTotal += price;
-if (r.date && r.date.startsWith(currentMonth)) monthTotal += price;
+const labor = Number(r.laborPrice) || 0;
+const parts = Number(r.partsPrice) || 0;
+
+if (r.date === todayStr) {
+todayLabor += labor;
+todayParts += parts;
+}
+if (r.date && r.date.startsWith(currentMonth)) {
+monthLabor += labor;
+monthParts += parts;
+}
 });
 });
 
-document.getElementById('finToday').innerText = `${todayTotal.toLocaleString('sr-RS')} RSD`;
-document.getElementById('finMonth').innerText = `${monthTotal.toLocaleString('sr-RS')} RSD`;
+document.getElementById('finTodayLabor').innerText = `${todayLabor.toLocaleString('sr-RS')} RSD`;
+document.getElementById('finTodayParts').innerText = `${todayParts.toLocaleString('sr-RS')} RSD`;
+document.getElementById('finTodayTotal').innerText = `${(todayLabor + todayParts).toLocaleString('sr-RS')} RSD`;
+
+document.getElementById('finMonthLabor').innerText = `${monthLabor.toLocaleString('sr-RS')} RSD`;
+document.getElementById('finMonthParts').innerText = `${monthParts.toLocaleString('sr-RS')} RSD`;
+document.getElementById('finMonthTotal').innerText = `${(monthLabor + monthParts).toLocaleString('sr-RS')} RSD`;
 }
 
 function switchTab(tab) {
@@ -1034,7 +1060,8 @@ const itemEl = document.createElement('div');
 itemEl.className = "bg-slate-900/80 border border-slate-700/80 rounded-lg p-3 space-y-2";
 let itemsHtml = (rec.items || []).map(i => `<li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span><span>${i}</span></li>`).join('');
 
-const priceDisplay = (userRole === 'master' && rec.price > 0) ? `<span class="font-mono text-emerald-400 font-semibold bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded text-xs">${rec.price.toLocaleString('sr-RS')} RSD</span>` : '';
+const totalPrice = (rec.laborPrice || 0) + (rec.partsPrice || 0);
+const priceDisplay = (userRole === 'master' && totalPrice > 0) ? `<span class="font-mono text-emerald-400 font-semibold bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded text-xs" title="Ruke: ${rec.laborPrice || 0} RSD, Delovi: ${rec.partsPrice || 0} RSD">${totalPrice.toLocaleString('sr-RS')} RSD</span>` : '';
 
 itemEl.innerHTML = `
 <div class="flex justify-between items-center text-xs pb-1.5 border-b border-slate-800">
@@ -1066,7 +1093,10 @@ const model = (document.getElementById('inputModel').value === 'CUSTOM_NEW') ? d
 const year = document.getElementById('inputYear').value;
 const date = document.getElementById('inputDate').value;
 const km = parseInt(document.getElementById('inputKm').value);
-const price = userRole === 'master' ? (parseFloat(document.getElementById('inputPrice').value) || 0) : 0;
+
+const laborPrice = userRole === 'master' ? (parseFloat(document.getElementById('inputLaborPrice').value) || 0) : 0;
+const partsPrice = userRole === 'master' ? (parseFloat(document.getElementById('inputPartsPrice').value) || 0) : 0;
+
 const customNotes = document.getElementById('inputCustomWork').value.trim();
 const editingId = document.getElementById('editRecordId').value;
 
@@ -1095,7 +1125,8 @@ maliServis: maliServisDone,
 velikiServis: velikiServisDone,
 items: selectedItems,
 customNotes: customNotes,
-price: price
+laborPrice: laborPrice,
+partsPrice: partsPrice
 };
 
 if (editingId) {
@@ -1134,7 +1165,8 @@ handlePlateInputAutoDetect();
 document.getElementById('inputDate').value = record.date;
 document.getElementById('inputKm').value = record.km;
 if (userRole === 'master') {
-document.getElementById('inputPrice').value = record.price || '';
+document.getElementById('inputLaborPrice').value = record.laborPrice || '';
+document.getElementById('inputPartsPrice').value = record.partsPrice || '';
 }
 document.getElementById('inputCustomWork').value = record.customNotes || '';
 document.getElementById('editRecordId').value = record.id;
@@ -1230,4 +1262,3 @@ setTimeout(() => { toast.classList.add('opacity-0', 'pointer-events-none'); }, 3
 </script>
 </body>
 </html>
-
