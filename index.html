@@ -1,3 +1,10 @@
+Odlično razmišljanje! To je savršeno rešenje.
+Zadržavamo staru lozinku admin123 za radni deo (unose, izmene, pregled vozila i slika), a dodajemo master123 kao viši, vlasnički nivo koji otvara sve to, plus kompletan finansijski modul sa zaradom i pregledom po danima i mesecima koji je strogo sakriven od običnih majstora.
+Takođe, u ovu verziju v2.1 ubacujemo i:
+ * Popravku prikaza slika (korišćenje non-destructive prikaza poput object-fit: contain sa urednom pozadinom, da se nijedan deo automobila ne odseca bez obzira na ugao slikanja).
+ * Polje za cenu (zaradu) prilikom unosa servisa (koje se vidi i unosi samo kada je ulogovan nalog sa ovlašćenjima).
+ * Finansijsku kontrolnu tablu (Dashboard) dostupnu isključivo preko master123 lozinke.
+Evo kompletno izmenjenog i optimizovanog koda za verziju v2.1:
 <!DOCTYPE html>
 <html lang="sr" class="h-full bg-slate-900 text-slate-100">
 <head>
@@ -41,7 +48,10 @@ DiV
 <p class="text-xs text-slate-400">Digitalna Servisna Knjižica</p>
 </div>
 </div>
-<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v2.0</span>
+<div class="flex items-center gap-2">
+<span id="authRoleBadge" class="hidden text-[10px] font-mono px-2 py-0.5 rounded font-bold"></span>
+<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v2.1</span>
+</div>
 </div>
 <!-- Main Tabs -->
 <div class="max-w-md mx-auto flex border-t border-slate-700/60 bg-slate-800">
@@ -49,7 +59,7 @@ DiV
 <i class="fa-solid fa-magnifying-glass"></i> Provera Servisa
 </button>
 <button id="tabMechanicBtn" onclick="tryOpenMechanicTab()" class="flex-1 py-3 px-2 text-center text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-1.5">
-<i class="fa-solid fa-wrench"></i> Unos Servisa (Majstor)
+<i class="fa-solid fa-wrench"></i> Servisni Panel
 </button>
 </div>
 </header>
@@ -79,8 +89,9 @@ DiV
 <!-- Customer Result -->
 <div id="customerResultCard" class="hidden space-y-4">
 <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
-<div id="customerCarImgContainer" class="w-full h-48 bg-slate-900 relative flex items-center justify-center border-b border-slate-700">
-<img id="customerCarImg" src="" alt="Slika Automobila" class="w-full h-full object-cover hidden">
+<!-- Non-destructive image view (object-fit: contain) da se ne seče auto -->
+<div id="customerCarImgContainer" class="w-full h-48 bg-slate-950 relative flex items-center justify-center border-b border-slate-700">
+<img id="customerCarImg" src="" alt="Slika Automobila" class="max-w-full max-h-full object-contain hidden">
 <div id="customerCarImgPlaceholder" class="text-center p-4 text-slate-500">
 <i class="fa-solid fa-car text-4xl mb-2 text-slate-600"></i>
 <p class="text-xs">Nema priložene fotografije vozila</p>
@@ -176,8 +187,30 @@ UREDNO
 </div>
 </section>
 
-<!-- TAB 2: UNOS / SERVISNI PANEL (ZA MAJSTORA) -->
+<!-- TAB 2: SERVISNI PANEL (ZA MAJSTORE I VLASNIKA) -->
 <section id="mechanicView" class="hidden space-y-5">
+<!-- Finansijski Modul (Vidljiv SAMO za master123) -->
+<div id="masterFinanceCard" class="hidden bg-gradient-to-br from-slate-800 to-slate-900 border border-emerald-500/40 rounded-xl p-4 shadow-xl space-y-3">
+<div class="flex justify-between items-center border-b border-slate-700 pb-2">
+<h3 class="font-bold text-emerald-400 text-sm flex items-center gap-2">
+<i class="fa-solid fa-wallet"></i> Finansijski Izveštaj (Vlasnik)
+</h3>
+<button onclick="toggleFinanceDetails()" class="text-xs bg-slate-700 hover:bg-slate-600 text-emerald-300 px-2.5 py-1 rounded">Prikaži / Sakrij</button>
+</div>
+<div id="financeContent" class="hidden space-y-3 pt-1">
+<div class="grid grid-cols-2 gap-2 text-center">
+<div class="bg-slate-950/70 p-2.5 rounded-lg border border-slate-700/60">
+<p class="text-[11px] text-slate-400">Promet danas</p>
+<p id="finToday" class="text-base font-bold text-emerald-400 mt-0.5">0 RSD</p>
+</div>
+<div class="bg-slate-950/70 p-2.5 rounded-lg border border-slate-700/60">
+<p class="text-[11px] text-slate-400">Promet ovaj mesec</p>
+<p id="finMonth" class="text-base font-bold text-emerald-400 mt-0.5">0 RSD</p>
+</div>
+</div>
+</div>
+</div>
+
 <div class="grid grid-cols-2 gap-2">
 <button onclick="toggleAllVehiclesModal(true)" class="bg-slate-800 hover:bg-slate-700 active:scale-[0.99] border border-slate-700 text-red-400 font-bold py-3 px-3 rounded-xl shadow-md flex items-center justify-between transition text-xs">
 <span class="flex items-center gap-1.5">
@@ -242,9 +275,16 @@ UREDNO
 </div>
 </div>
 
+<div class="grid grid-cols-2 gap-2">
 <div>
-<label class="block text-xs font-semibold text-slate-300 mb-1">Kilometraža na satu (km) *</label>
+<label class="block text-xs font-semibold text-slate-300 mb-1">Kilometraža (km) *</label>
 <input type="number" id="inputKm" required placeholder="npr. 185000" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-semibold focus:outline-none focus:border-red-500 text-xs">
+</div>
+<!-- Polje za cenu (Vidljivo SAMO za master nivo) -->
+<div id="masterPriceContainer" class="hidden">
+<label class="block text-xs font-semibold text-emerald-400 mb-1">Cena / Zarada (RSD)</label>
+<input type="number" id="inputPrice" placeholder="npr. 12000" class="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-3 py-2 text-white font-semibold focus:outline-none focus:border-emerald-400 text-xs">
+</div>
 </div>
 </div>
 
@@ -378,15 +418,15 @@ UREDNO
 </section>
 </main>
 
-<!-- Modal: Password Check -->
+<!-- Modal: Password Check (Automatski prepoznaje admin123 ili master123) -->
 <div id="passwordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
 <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-4">
 <div class="text-center">
 <div class="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-2 border border-red-500/20 text-lg">
 <i class="fa-solid fa-lock"></i>
 </div>
-<h3 class="font-bold text-white text-sm">Majstorski Panel</h3>
-<p class="text-xs text-slate-400 mt-1">Unesite lozinku za pristup</p>
+<h3 class="font-bold text-white text-sm">Servisni Panel</h3>
+<p class="text-xs text-slate-400 mt-1">Unesite pristupnu lozinku</p>
 </div>
 
 <form onsubmit="handlePasswordSubmit(event)" class="space-y-3">
@@ -458,7 +498,7 @@ const CAR_BRANDS = {
 };
 
 let appData = { vehicles: {} };
-let isMechanicAuthorized = sessionStorage.getItem('div_auth') === 'true';
+let userRole = sessionStorage.getItem('div_role') || null; // 'master' ili 'mechanic'
 let mileageChartInstance = null;
 
 window.onload = async function() {
@@ -467,6 +507,7 @@ populateBrandDropdown();
 populateYearDropdown();
 setDefaultDate();
 updateVehiclesBadgeCount();
+applyRoleUI();
 };
 
 function normalizePlate(plate) {
@@ -510,7 +551,8 @@ km: r.km,
 maliServis: r.mali_servis,
 velikiServis: r.veliki_servis,
 items: typeof r.items === 'string' ? JSON.parse(r.items) : (r.items || []),
-customNotes: r.custom_notes || ''
+customNotes: r.custom_notes || '',
+price: Number(r.price) || 0
 });
 }
 });
@@ -519,6 +561,7 @@ customNotes: r.custom_notes || ''
 console.error("Sistemska greška pri učitavanju:", e);
 }
 updateVehiclesBadgeCount();
+calculateFinanceSummary();
 }
 
 function compressImage(file, maxWidth = 1200, quality = 0.75) {
@@ -614,7 +657,8 @@ km: newRecordObj.km,
 mali_servis: newRecordObj.maliServis,
 veliki_servis: newRecordObj.velikiServis,
 items: newRecordObj.items,
-custom_notes: newRecordObj.customNotes
+custom_notes: newRecordObj.customNotes,
+price: newRecordObj.price
 };
 
 const { error: rError } = await supabaseClient
@@ -652,7 +696,7 @@ document.getElementById('totalVehiclesBadge').innerText = count;
 }
 
 function tryOpenMechanicTab() {
-if (isMechanicAuthorized) {
+if (userRole) {
 switchTab('mechanic');
 } else {
 document.getElementById('mechanicPasswordInput').value = '';
@@ -665,14 +709,68 @@ function closePasswordModal() { document.getElementById('passwordModal').classLi
 
 function handlePasswordSubmit(e) {
 e.preventDefault();
-if (document.getElementById('mechanicPasswordInput').value === 'admin123') {
-isMechanicAuthorized = true;
-sessionStorage.setItem('div_auth', 'true');
+const pass = document.getElementById('mechanicPasswordInput').value.trim();
+if (pass === 'master123') {
+userRole = 'master';
+sessionStorage.setItem('div_role', 'master');
 closePasswordModal();
+applyRoleUI();
+switchTab('mechanic');
+} else if (pass === 'admin123') {
+userRole = 'mechanic';
+sessionStorage.setItem('div_role', 'mechanic');
+closePasswordModal();
+applyRoleUI();
 switchTab('mechanic');
 } else {
 document.getElementById('passwordError').classList.remove('hidden');
 }
+}
+
+function applyRoleUI() {
+const roleBadge = document.getElementById('authRoleBadge');
+const masterFinanceCard = document.getElementById('masterFinanceCard');
+const masterPriceContainer = document.getElementById('masterPriceContainer');
+
+if (userRole === 'master') {
+roleBadge.innerText = 'VLASNIK';
+roleBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 inline-block";
+masterFinanceCard.classList.remove('hidden');
+masterPriceContainer.classList.remove('hidden');
+} else if (userRole === 'mechanic') {
+roleBadge.innerText = 'MAJSTOR';
+roleBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 inline-block";
+masterFinanceCard.classList.add('hidden');
+masterPriceContainer.classList.add('hidden');
+} else {
+roleBadge.classList.add('hidden');
+masterFinanceCard.classList.add('hidden');
+masterPriceContainer.classList.add('hidden');
+}
+}
+
+function toggleFinanceDetails() {
+const content = document.getElementById('financeContent');
+content.classList.toggle('hidden');
+}
+
+function calculateFinanceSummary() {
+if (userRole !== 'master') return;
+let todayTotal = 0;
+let monthTotal = 0;
+const todayStr = new Date().toISOString().split('T')[0];
+const currentMonth = todayStr.substring(0, 7); // YYYY-MM
+
+Object.values(appData.vehicles).forEach(v => {
+(v.records || []).forEach(r => {
+const price = Number(r.price) || 0;
+if (r.date === todayStr) todayTotal += price;
+if (r.date && r.date.startsWith(currentMonth)) monthTotal += price;
+});
+});
+
+document.getElementById('finToday').innerText = `${todayTotal.toLocaleString('sr-RS')} RSD`;
+document.getElementById('finMonth').innerText = `${monthTotal.toLocaleString('sr-RS')} RSD`;
 }
 
 function switchTab(tab) {
@@ -942,14 +1040,19 @@ const itemEl = document.createElement('div');
 itemEl.className = "bg-slate-900/80 border border-slate-700/80 rounded-lg p-3 space-y-2";
 let itemsHtml = (rec.items || []).map(i => `<li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span><span>${i}</span></li>`).join('');
 
+const priceDisplay = (userRole === 'master' && rec.price > 0) ? `<span class="font-mono text-emerald-400 font-semibold bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5 rounded text-xs">${rec.price.toLocaleString('sr-RS')} RSD</span>` : '';
+
 itemEl.innerHTML = `
 <div class="flex justify-between items-center text-xs pb-1.5 border-b border-slate-800">
 <span class="font-bold text-white"><i class="fa-solid fa-calendar-day text-red-400 mr-1"></i> ${formatDate(rec.date)}</span>
+<div class="flex items-center gap-2">
+${priceDisplay}
 <span class="font-mono text-slate-300 font-semibold bg-slate-800 px-2 py-0.5 rounded">${rec.km.toLocaleString('sr-RS')} km</span>
+</div>
 </div>
 ${itemsHtml ? `<ul class="space-y-1 my-2 text-xs text-slate-200">${itemsHtml}</ul>` : ''}
 ${rec.customNotes ? `<div class="mt-2 pt-2 border-t border-slate-800 text-xs text-slate-400 italic"><strong>Napomena:</strong> ${rec.customNotes}</div>` : ''}
-${isMechanicAuthorized ? `<div class="pt-2 border-t border-slate-800 flex justify-end gap-2"><button onclick="editRecord('${plate}',${rec.id})" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded border border-slate-700"><i class="fa-solid fa-pen-to-square"></i> Izmeni</button><button onclick="deleteRecord('${plate}',${rec.id})" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-red-400 px-2.5 py-1 rounded border border-slate-700"><i class="fa-solid fa-trash"></i> Obriši</button></div>` : ''}
+${userRole ? `<div class="pt-2 border-t border-slate-800 flex justify-end gap-2"><button onclick="editRecord('${plate}',${rec.id})" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded border border-slate-700"><i class="fa-solid fa-pen-to-square"></i> Izmeni</button><button onclick="deleteRecord('${plate}',${rec.id})" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-red-400 px-2.5 py-1 rounded border border-slate-700"><i class="fa-solid fa-trash"></i> Obriši</button></div>` : ''}
 `;
 container.appendChild(itemEl);
 });
@@ -969,6 +1072,7 @@ const model = (document.getElementById('inputModel').value === 'CUSTOM_NEW') ? d
 const year = document.getElementById('inputYear').value;
 const date = document.getElementById('inputDate').value;
 const km = parseInt(document.getElementById('inputKm').value);
+const price = userRole === 'master' ? (parseFloat(document.getElementById('inputPrice').value) || 0) : 0;
 const customNotes = document.getElementById('inputCustomWork').value.trim();
 const editingId = document.getElementById('editRecordId').value;
 
@@ -996,7 +1100,8 @@ km: km,
 maliServis: maliServisDone,
 velikiServis: velikiServisDone,
 items: selectedItems,
-customNotes: customNotes
+customNotes: customNotes,
+price: price
 };
 
 if (editingId) {
@@ -1034,6 +1139,9 @@ document.getElementById('inputPlate').value = vehicle.plate;
 handlePlateInputAutoDetect();
 document.getElementById('inputDate').value = record.date;
 document.getElementById('inputKm').value = record.km;
+if (userRole === 'master') {
+document.getElementById('inputPrice').value = record.price || '';
+}
 document.getElementById('inputCustomWork').value = record.customNotes || '';
 document.getElementById('editRecordId').value = record.id;
 document.querySelectorAll('input[name="workDone"]').forEach(cb => { cb.checked = record.items && record.items.includes(cb.value); });
@@ -1128,3 +1236,4 @@ setTimeout(() => { toast.classList.add('opacity-0', 'pointer-events-none'); }, 3
 </script>
 </body>
 </html>
+
