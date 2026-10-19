@@ -10,6 +10,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Chart.js za Timeline / Grafikon -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Cropper.js za kropovanje slika -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <style>
 body {
 font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -43,7 +46,7 @@ DiV
 </div>
 <div class="flex items-center gap-2">
 <span id="authRoleBadge" class="hidden text-[10px] font-mono px-2 py-0.5 rounded font-bold"></span>
-<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v2.6</span>
+<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v2.7</span>
 </div>
 </div>
 <!-- Main Tabs -->
@@ -82,9 +85,9 @@ DiV
 <!-- Customer Result -->
 <div id="customerResultCard" class="hidden space-y-4">
 <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
-<!-- Non-destructive image view (object-fit: contain) da se ne seče auto -->
-<div id="customerCarImgContainer" class="w-full h-48 bg-slate-950 relative flex items-center justify-center border-b border-slate-700">
-<img id="customerCarImg" src="" alt="Slika Automobila" class="max-w-full max-h-full object-contain hidden">
+<!-- Cover prikaz za savršeno popunjenu sliku automobila -->
+<div id="customerCarImgContainer" class="w-full h-48 bg-slate-950 relative flex items-center justify-center border-b border-slate-700 overflow-hidden">
+<img id="customerCarImg" src="" alt="Slika Automobila" class="w-full h-full object-cover hidden">
 <div id="customerCarImgPlaceholder" class="text-center p-4 text-slate-500">
 <i class="fa-solid fa-car text-4xl mb-2 text-slate-600"></i>
 <p class="text-xs">Nema priložene fotografije vozila</p>
@@ -417,9 +420,9 @@ UREDNO
 <div class="space-y-3 pt-2 border-t border-slate-700">
 <div>
 <label class="block text-xs font-semibold text-slate-300 mb-1">
-<i class="fa-solid fa-camera text-slate-400 mr-1"></i> Slika automobila (Automatska kompresija)
+<i class="fa-solid fa-camera text-slate-400 mr-1"></i> Slika automobila (Sa kropovanjem)
 </label>
-<input type="file" id="inputCarImage" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-white hover:file:bg-slate-600">
+<input type="file" id="inputCarImage" accept="image/*" onchange="initImageCropper(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-white hover:file:bg-slate-600">
 </div>
 
 <div class="p-2.5 bg-red-950/30 border border-red-500/20 rounded-lg">
@@ -437,6 +440,23 @@ UREDNO
 </form>
 </section>
 </main>
+
+<!-- Modal: Kropovanje Slike -->
+<div id="cropperModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 hidden flex flex-col justify-between p-4">
+<div class="text-center pt-2">
+<h3 class="font-bold text-white text-sm">Podesite i isecite sliku automobila</h3>
+<p class="text-[11px] text-slate-400">Prevucite okvir ili zumirajte prstima</p>
+</div>
+<div class="flex-1 flex items-center justify-center my-2 overflow-hidden max-h-[70vh]">
+<div class="max-w-full max-h-full">
+<img id="cropperImage" src="" alt="Za kropovanje" class="max-block max-w-full">
+</div>
+</div>
+<div class="flex gap-2 pb-2">
+<button type="button" onclick="cancelCropping()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-lg text-xs transition">Odustani</button>
+<button type="button" onclick="confirmCropping()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-xs transition">Potvrdi i iseci</button>
+</div>
+</div>
 
 <!-- Modal: Password Check -->
 <div id="passwordModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -560,6 +580,8 @@ const CAR_BRANDS = {
 let appData = { vehicles: {} };
 let userRole = sessionStorage.getItem('div_role') || null;
 let mileageChartInstance = null;
+let cropperInstance = null;
+let croppedCarBlob = null;
 
 window.onload = async function() {
 await loadFromSupabase();
@@ -626,43 +648,59 @@ calculateFinanceSummary();
 renderWeeklyActivity();
 }
 
-function compressImage(file, maxWidth = 1200, quality = 0.75) {
-return new Promise((resolve) => {
+function initImageCropper(e) {
+const file = e.target.files[0];
+if (!file) return;
+
 const reader = new FileReader();
-reader.readAsDataURL(file);
-reader.onload = (event) => {
-const img = new Image();
-img.src = event.target.result;
-img.onload = () => {
-const canvas = document.createElement('canvas');
-let width = img.width;
-let height = img.height;
+reader.onload = function(event) {
+const imgEl = document.getElementById('cropperImage');
+imgEl.src = event.target.result;
+document.getElementById('cropperModal').classList.remove('hidden');
 
-if (width > maxWidth) {
-height = Math.round((height * maxWidth) / width);
-width = maxWidth;
+if (cropperInstance) {
+cropperInstance.destroy();
 }
 
-canvas.width = width;
-canvas.height = height;
-const ctx = canvas.getContext('2d');
-ctx.drawImage(img, 0, 0, width, height);
-canvas.toBlob((blob) => {
-resolve(blob);
-}, 'image/jpeg', quality);
-};
-};
+cropperInstance = new Cropper(imgEl, {
+aspectRatio: 16 / 9,
+viewMode: 1,
+autoCropArea: 1,
+responsive: true
 });
+};
+reader.readAsDataURL(file);
 }
 
-async function uploadImageToStorage(file, plate, type) {
-if (!file) return null;
+function cancelCropping() {
+document.getElementById('cropperModal').classList.add('hidden');
+document.getElementById('inputCarImage').value = '';
+croppedCarBlob = null;
+if (cropperInstance) {
+cropperInstance.destroy();
+cropperInstance = null;
+}
+}
+
+function confirmCropping() {
+if (!cropperInstance) return;
+cropperInstance.getCroppedCanvas({
+width: 1200,
+height: 675
+}).toBlob((blob) => {
+croppedCarBlob = blob;
+document.getElementById('cropperModal').classList.add('hidden');
+showToast("Slika uspešno isečena i spremna!");
+}, 'image/jpeg', 0.85);
+}
+
+async function uploadImageToStorage(blobOrFile, plate, type) {
+if (!blobOrFile) return null;
 try {
-const compressedBlob = await compressImage(file);
 const fileName = `${normalizePlate(plate)}_${type}_${Date.now()}.jpg`;
 const { data, error } = await supabaseClient.storage
 .from('car-images')
-.upload(fileName, compressedBlob, { contentType: 'image/jpeg', upsert: true });
+.upload(fileName, blobOrFile, { contentType: 'image/jpeg', upsert: true });
 
 if (error) {
 console.error("Greška pri otpremanju slike:", error);
@@ -675,18 +713,18 @@ const { data: publicUrlData } = supabaseClient.storage
 
 return publicUrlData.publicUrl;
 } catch(e) {
-console.error("Greška kompresije/otpremanja:", e);
+console.error("Greška otpremanja:", e);
 return null;
 }
 }
 
-async function saveVehicle(normKey, vehicleData, newRecordObj, editingId, carFile, licenseFile) {
+async function saveVehicle(normKey, vehicleData, newRecordObj, editingId, carBlob, licenseFile) {
 try {
 let carUrl = vehicleData.carImage;
 let licenseUrl = vehicleData.licenseImage;
 
-if (carFile) {
-const uploadedCar = await uploadImageToStorage(carFile, vehicleData.plate, 'car');
+if (carBlob) {
+const uploadedCar = await uploadImageToStorage(carBlob, vehicleData.plate, 'car');
 if (uploadedCar) carUrl = uploadedCar;
 }
 if (licenseFile) {
@@ -1355,7 +1393,6 @@ const selectedItems = Array.from(document.querySelectorAll('input[name="workDone
 const maliServisDone = selectedItems.some(i => i.includes('Ulje') || i.includes('Filter'));
 const velikiServisDone = selectedItems.some(i => i.includes('Zupčastog') || i.includes('Vodena pumpa'));
 
-const carFile = document.getElementById('inputCarImage').files[0];
 const licenseFile = document.getElementById('inputLicenseImage').files[0];
 
 let existingVehicle = appData.vehicles[normKey] || {
@@ -1390,10 +1427,11 @@ existingVehicle.brand = brand;
 existingVehicle.model = model;
 existingVehicle.year = year;
 
-const success = await saveVehicle(normKey, existingVehicle, recordObj, editingId, carFile, licenseFile);
+const success = await saveVehicle(normKey, existingVehicle, recordObj, editingId, croppedCarBlob, licenseFile);
 
 submitBtn.disabled = false;
 submitBtn.innerHTML = originalBtnHtml;
+croppedCarBlob = null;
 
 if (success) {
 showToast(editingId ? "Servis uspešno izmenjen!" : "Vozilo i servis uspešno upisani u bazu!");
@@ -1468,6 +1506,7 @@ document.getElementById('cancelEditBtn').classList.add('hidden');
 document.getElementById('autoDetectNotice').classList.add('hidden');
 document.getElementById('inputCustomBrand').classList.add('hidden');
 document.getElementById('inputCustomModel').classList.add('hidden');
+croppedCarBlob = null;
 setDefaultDate();
 }
 
