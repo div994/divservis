@@ -35,21 +35,19 @@ border-radius: 3px;
 <!-- Header -->
 <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-40 shadow-md">
 <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-<div class="flex items-center space-x-3">
-<div class="bg-red-600 text-white font-black text-xl rounded-lg px-2.5 py-1.5 shadow-md border border-red-500 tracking-wider">
+<!-- DiV logo sada radi kao Home dugme -->
+<div onclick="goHome()" class="flex items-center space-x-3 cursor-pointer group">
+<div class="bg-red-600 group-hover:bg-red-500 text-white font-black text-xl rounded-lg px-2.5 py-1.5 shadow-md border border-red-500 tracking-wider transition">
 DiV
 </div>
 <div>
-<h1 class="text-lg font-bold tracking-tight text-white leading-tight">Auto servis DiV</h1>
+<h1 class="text-lg font-bold tracking-tight text-white leading-tight group-hover:text-red-400 transition">Auto servis DiV</h1>
 <p class="text-xs text-slate-400">Digitalna Servisna Knjižica</p>
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button onclick="openQrModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1" title="QR Kod za radionicu">
-<i class="fa-solid fa-qrcode text-red-400"></i> QR
-</button>
 <span id="authRoleBadge" class="hidden text-[10px] font-mono px-2 py-0.5 rounded font-bold"></span>
-<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v2.9</span>
+<span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-500/20">v2.10</span>
 </div>
 </div>
 <!-- Main Tabs -->
@@ -444,35 +442,6 @@ UREDNO
 </section>
 </main>
 
-<!-- Modal: QR Kod za radionicu -->
-<div id="qrModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-<div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xs w-full p-6 shadow-2xl text-center space-y-4">
-<div>
-<h3 class="font-bold text-white text-sm">Auto servis DiV</h3>
-<p class="text-[11px] text-slate-400 mt-0.5">Skenirajte za digitalnu servisnu knjižicu</p>
-</div>
-
-<!-- QR Kod sa ikonom ključa u sredini -->
-<div class="relative w-48 h-48 mx-auto bg-white p-2 rounded-xl shadow-inner flex items-center justify-center">
-<img id="qrImageElement" src="" alt="QR Kod" class="w-full h-full object-contain">
-<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-<div class="w-10 h-10 bg-slate-900 border-2 border-red-600 rounded-full flex items-center justify-center shadow-lg">
-<i class="fa-solid fa-wrench text-red-500 text-base"></i>
-</div>
-</div>
-</div>
-
-<p class="text-[10px] font-mono text-slate-400 break-all bg-slate-950 p-2 rounded border border-slate-800">https://div994.github.io</p>
-
-<div class="flex gap-2 pt-1">
-<button type="button" onclick="closeQrModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold py-2.5 rounded-lg transition">Zatvori</button>
-<a id="downloadQrBtn" href="" download="autoservis_div_qr.png" target="_blank" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2.5 rounded-lg transition flex items-center justify-center gap-1.5">
-<i class="fa-solid fa-download"></i> Preuzmi
-</a>
-</div>
-</div>
-</div>
-
 <!-- Modal: Kropovanje Slike -->
 <div id="cropperModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 hidden flex flex-col justify-between p-4">
 <div class="text-center pt-2">
@@ -622,22 +591,15 @@ populateYearDropdown();
 setDefaultDate();
 updateVehiclesBadgeCount();
 applyRoleUI();
-setupQrCode();
 };
 
-function setupQrCode() {
-const targetUrl = "https://div994.github.io";
-const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(targetUrl)}&margin=10`;
-document.getElementById('qrImageElement').src = qrApiUrl;
-document.getElementById('downloadQrBtn').href = qrApiUrl;
-}
-
-function openQrModal() {
-document.getElementById('qrModal').classList.remove('hidden');
-}
-
-function closeQrModal() {
-document.getElementById('qrModal').classList.add('hidden');
+function goHome() {
+switchTab('customer');
+document.getElementById('searchPlate').value = '';
+document.getElementById('searchKm').value = '';
+document.getElementById('customerResultCard').classList.add('hidden');
+document.getElementById('noVehicleFound').classList.add('hidden');
+window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function normalizePlate(plate) {
